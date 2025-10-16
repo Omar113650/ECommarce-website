@@ -77,8 +77,7 @@ import blogRoutes from "./routes/BlogRoute.js";
 import wishlistRoutes from "./routes/WishlistRoute.js";
 import contactRoutes from "./routes/ContactRoute.js";
 
-// test route
-// app.get("/", (req, res) => res.send("Hello World from Root Route"));
+app.get("/", (req, res) => res.send("Hello in vercel"));
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/product", product);
