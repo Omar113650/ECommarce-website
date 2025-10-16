@@ -11,7 +11,7 @@ import {
   googleCallbackController,
   loginLimiter,
   CountUser,
-} from "../Controllers/AuthController.js";
+} from "../controllers/AuthController.js";
 import { validate } from "../middlewares/Validate.js";
 import { UserValidate } from "../validation/UserValidation.js";
 
