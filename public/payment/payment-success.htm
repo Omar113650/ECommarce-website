@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Payment Success</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin-top: 80px;
+      }
+      a {
+        color: #635bff;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>✅ Payment Successful!</h1>
+    <p>Your order has been confirmed and is being processed.</p>
+    <a href="checkout.html">← Back to Home</a>
+
+    <script>
+      // استخراج session_id من الـ URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionId = urlParams.get("session_id");
+
+      // تأكيد الدفع في الباك إند
+      if (sessionId) {
+        fetch("http://localhost:5000/api/v1/payment/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        })
+          .then((res) => res.json())
+          .then((data) => console.log("Payment confirmed ✅", data))
+          .catch((err) => console.error("Error confirming payment:", err));
+      }
+    </script>
+  </body>
+</html>
