@@ -25,7 +25,6 @@ export const getAllBrands = asyncHandler(async (req, res) => {
       message: "No brands found",
     });
   }
-
   res.status(200).json({
     success: true,
     count: brands.length,
@@ -56,7 +55,6 @@ export const updateBrand = asyncHandler(async (req, res) => {
   if (!brand) {
     return res.status(404).json({ message: "Brand not found" });
   }
-
   brand.Name = Name || brand.Name;
   await brand.save();
 

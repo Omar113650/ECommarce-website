@@ -39,8 +39,8 @@ export const RegisterUser = asyncHandler(async (req, res) => {
   if (existingUser) {
     return res.status(403).json({ message: "Phone or Email already in use" });
   }
-
   const hashedPassword = await bcrypt.hash(Password, 10);
+
   const user = await User.create({
     Name,
     Email,
@@ -97,13 +97,13 @@ export const RegisterUser = asyncHandler(async (req, res) => {
 // @access  Public
 export const loginUser = asyncHandler(async (req, res) => {
   const { Phone, Password } = req.body;
+
   const user = await User.findOne({ Phone });
   if (!user) {
     return res
       .status(400)
       .json({ message: "Invalid phone number or password" });
   }
-
   const isMatch = await bcrypt.compare(Password, user.Password);
   if (!isMatch) {
     return res
@@ -183,15 +183,14 @@ export const UpdateProfile = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
-
   const existingUser = await User.findOne({ Phone });
   if (existingUser && existingUser._id.toString() !== id) {
     return res.status(403).json({ message: "Phone number already in use" });
   }
-
   user.Name = Name;
   user.Phone = Phone;
   user.Email = Email;
+
   await user.save();
 
   await sendEmail({
@@ -277,22 +276,18 @@ export const RefreshToken = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Google callback
+// محتاج : CLIENT_URL بتاع الفرونت
 export const googleCallbackController = (req, res) => {
   const user = req.user;
 
   if (!user) {
     return res.status(401).json({ message: "Login failed" });
   }
-
-  //   const { AccessToken, refreshToken } = generateTokens(user);
-  // setRefreshCookie(res, refreshToken);
-
-  const token = jwt.sign(
-    { email: user.email, id: user._id, name: user.name },
-    process.env.JWT_SECRET,
-    { expiresIn: "1d" }
+  const { AccessToken, refreshToken } = generateTokens(user);
+  setRefreshCookie(res, refreshToken);
+  return res.redirect(
+    `${process.env.CLIENT_URL}/login/success?access=${AccessToken}&refresh=${refreshToken}`
   );
-  return res.redirect(`${process.env.CLIENT_URL}/login/success?token=${token}`);
 };
 
 // @desc    limit of login to avoid Brute-force
@@ -309,6 +304,9 @@ export const loginLimiter = rateLimit({
 
 export const CountUser = asyncHandler(async (req, res) => {
   const count_user = await User.countDocuments();
+  if (!count_user) {
+    return res.status(404).json({ message: "not exist any user" });
+  }
 
   res.status(200).json({
     success: true,
@@ -316,74 +314,33 @@ export const CountUser = asyncHandler(async (req, res) => {
   });
 });
 
+// Get all users(admin)
+export const getAllUser = asyncHandler(async (req, res) => {
+  const users = await User.find().select("-Password");
+  if (!users) {
+    return res.status(404).json({ message: "not exist any user" });
+  }
+  res.status(200).json({
+    success: true,
+    users,
+  });
+});
+// admin
+export const updateUserRole = asyncHandler(async (req, res) => {
+  const newUserData = {
+    Name: req.body.Name,
+    Email: req.body.Email,
+    role: req.body.role,
+  };
 
+  const UpdateUser = await User.findByIdAndUpdate(req.params.id, newUserData, {
+    new: true,
+    runValidators: true,
+    useFindAndModify: false,
+  });
 
-
-
-
-// // Get all users(admin)
-// exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
-//   const users = await User.find();
-
-//   res.status(200).json({
-//     success: true,
-//     users,
-//   });
-// });
-
-// // Get single user (admin)
-// exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
-//   const user = await User.findById(req.params.id);
-
-//   if (!user) {
-//     return next(
-//       new ErrorHander(`User does not exist with Id: ${req.params.id}`)
-//     );
-//   }
-
-//   res.status(200).json({
-//     success: true,
-//     user,
-//   });
-// });
-
-// // update User Role -- Admin
-// exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
-//   const newUserData = {
-//     name: req.body.name,
-//     email: req.body.email,
-//     role: req.body.role,
-//   };
-
-//   await User.findByIdAndUpdate(req.params.id, newUserData, {
-//     new: true,
-//     runValidators: true,
-//     useFindAndModify: false,
-//   });
-
-//   res.status(200).json({
-//     success: true,
-//   });
-// });
-
-// // Delete User --Admin
-// exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
-//   const user = await User.findById(req.params.id);
-
-//   if (!user) {
-//     return next(
-//       new ErrorHander(`User does not exist with Id: ${req.params.id}`, 400)
-//     );
-//   }
-
-//   const imageId = user.avatar.public_id;
-
-//   await cloudinary.v2.uploader.destroy(imageId);
-
-//   await user.remove();
-
-//   res.status(200).json({
-//     success: true,
-//     message: "User Deleted Successfully",
-//   });
-// });
+  res.status(200).json({
+    success: true,
+    UpdateUser,
+  });
+});

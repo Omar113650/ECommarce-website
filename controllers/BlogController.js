@@ -20,7 +20,6 @@ export const createBlog = asyncHandler(async (req, res) => {
       .status(500)
       .json({ message: "Failed to upload image to Cloudinary" });
   }
-
   const blog = await Blog.create({
     title,
     content,

@@ -11,6 +11,8 @@ import {
   googleCallbackController,
   loginLimiter,
   CountUser,
+  getAllUser,
+  updateUserRole,
 } from "../controllers/AuthController.js";
 import { validate } from "../middlewares/Validate.js";
 import { UserValidate } from "../validation/UserValidation.js";
@@ -23,6 +25,8 @@ router.post("/login", loginLimiter, loginUser);
 router.post("/logout", logoutUser);
 router.post("/refresh", RefreshToken);
 router.put("/update-profile/:id", UpdateProfile);
+router.get("/get-all-user", getAllUser);
+router.put("/update-user-role/:id", updateUserRole);
 
 // Google login
 router.get(

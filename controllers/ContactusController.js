@@ -6,6 +6,7 @@ import { ContactUS } from "../models/Contactus.js";
 // @access  Public
 export const createContact = asyncHandler(async (req, res) => {
   const { Name, Phone, Email, Message } = req.body;
+
   const contact = await ContactUS.create({
     Name,
     Phone,
@@ -57,7 +58,6 @@ export const getContactById = asyncHandler(async (req, res) => {
       message: "Contact message not found",
     });
   }
-
   res.status(200).json({
     success: true,
     data: contact,
@@ -76,7 +76,6 @@ export const updateContact = asyncHandler(async (req, res) => {
       message: "Contact message not found",
     });
   }
-
   contact = await ContactUS.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
@@ -105,4 +104,3 @@ export const deleteContact = asyncHandler(async (req, res) => {
     message: "Contact deleted successfully",
   });
 });
-

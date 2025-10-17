@@ -20,16 +20,9 @@ dotenv.config({ path: ".env" });
 connectDB();
 
 const app = express();
-
-
-
-
-
-// لتحديد المسار المطلق للمجلد الحالي (لو بتستخدم ES Modules)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 🟢 السماح بعرض الملفات داخل public
 app.use(express.static(path.join(__dirname, "public")));
 app.use(session({ secret: "SECRET", resave: false, saveUninitialized: true }));
 app.use(helmet());
@@ -44,9 +37,6 @@ app.use((req, res, next) => {
 });
 // app.use(xss());
 app.use(statusMonitor());
-
-
-
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -54,7 +44,6 @@ app.use(
     message: "Too many requests from this IP, please try again later.",
   })
 );
-
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -91,14 +80,12 @@ app.use("/api/v1/brand", brandRoutes);
 app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 
-
 app.use(notfound);
 app.use(errorHandler);
-
-
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// https://e-commarce-website-eight.vercel.app

@@ -4,27 +4,24 @@ import {
   cloudinaryUploadImage,
   cloudinaryRemoveImage,
 } from "../utils/Cloudinary.js";
+
 // @desc   create category
 // @route  GET /api/category
 // @access Private
 export const CreateCategory = asyncHandler(async (req, res) => {
   const { name } = req.body;
-
   if (!name?.trim()) {
     return res.status(400).json({ message: "Category name is required" });
   }
-
   if (!req.file) {
     return res.status(400).json({ message: "Product image is required" });
   }
-
   const uploadResult = await cloudinaryUploadImage(req.file.buffer);
   if (!uploadResult?.secure_url) {
     return res
       .status(500)
       .json({ message: "Failed to upload image to Cloudinary" });
   }
-
   const category = await Category.create({ name: name.trim() });
 
   res.status(201).json({
@@ -104,19 +101,15 @@ export const UpdateCategory = asyncHandler(async (req, res) => {
   if (!name?.trim()) {
     return res.status(400).json({ message: "Category name is required" });
   }
-
   const category = await Category.findById(categoryId);
   if (!category) {
     return res.status(404).json({ message: "Category not found" });
   }
-
-  // Prevent updating to a duplicate name
   const duplicate = await Category.findOne({ name: name.trim() });
   if (duplicate && duplicate._id.toString() !== categoryId) {
     return res.status(409).json({ message: "Category name already in use" });
   }
 
-  // Handle image update if provided
   let imageUpdate = product.Image;
   if (req.file) {
     if (product.Image?.publicId) {
@@ -127,13 +120,11 @@ export const UpdateCategory = asyncHandler(async (req, res) => {
     if (!uploadedImage?.secure_url) {
       return res.status(500).json({ message: "Image upload failed" });
     }
-
     imageUpdate = {
       url: uploadedImage.secure_url,
       publicId: uploadedImage.public_id,
     };
   }
-
   category.name = name.trim();
   await category.save();
 
