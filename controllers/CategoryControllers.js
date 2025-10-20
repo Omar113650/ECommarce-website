@@ -62,7 +62,6 @@ export const GetCategory = asyncHandler(async (req, res) => {
   if (!categories.length) {
     return res.status(404).json({ message: "No categories found" });
   }
-
   res.status(200).json({
     message: "Categories fetched successfully",
     total: categories.length,

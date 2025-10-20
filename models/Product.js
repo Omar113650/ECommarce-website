@@ -24,12 +24,11 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
 
-    Brand:{
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"Brand",
-      required:true
-    }
-,
+    Brand: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
+      required: true,
+    },
     available: {
       type: String,
       enum: ["InStock", "OutOfStock"],
@@ -48,11 +47,10 @@ const ProductSchema = new mongoose.Schema(
       default: 5,
     },
 
-   Time: {
-  type: Date, // وقت انتهاء العرض
-  default: null,
-}
-
+    Time: {
+      type: Date, // وقت انتهاء العرض
+      default: null,
+    },
   },
   { timestamps: true }
 );

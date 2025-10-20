@@ -23,7 +23,6 @@ passport.use(
             picture: profile.photos?.[0]?.value || "",
           });
         }
-
         return done(null, user); // مهم: رجع user من DB مش profile
       } catch (error) {
         console.error("Google Auth Error:", error);
@@ -47,5 +46,3 @@ passport.deserializeUser(async (id, done) => {
 
 export default passport;
 
-// التجربه
-// https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount?response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fapi%2Fauth%2Fgoogle%2Fcallback&scope=profile%20email&client_id=941298748930-rfgd9k1j4vfeainhse5naahl44ngni82.apps.googleusercontent.com&service=lso&o2v=2&flowName=GeneralOAuthFlow

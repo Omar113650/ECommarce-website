@@ -47,7 +47,6 @@ export const createProduct = asyncHandler(async (req, res) => {
     product,
   });
 });
-
 // @desc    Get all products with search, filter & pagination
 // @route   GET /api/v1/products
 // @access  Public
@@ -67,15 +66,9 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   if (keyword) {
     query.Name = { $regex: keyword, $options: "i" };
   }
-
   // Filter by availability
-  if (available) {
-    available =
-      available.charAt(0).toUpperCase() + available.slice(1).toLowerCase();
-    if (["InStock", "OutOfStock"].includes(available)) {
-      query.available = available;
-    }
-  }
+  if (available && ["InStock", "OutOfStock"].includes(available))
+    query.available = available;
 
   // Filter by price range
   if (minPrice || maxPrice) {
@@ -108,38 +101,6 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     products,
   });
 });
-// export const getAllProducts = asyncHandler(async (req, res) => {
-//   let { keyword, available, minPrice, maxPrice, page = 1, limit = 10 } = req.query;
-//   const query = {};
-
-//   if (keyword) query.Name = { $regex: sanitizeInput(keyword), $options: "i" };
-//   if (available && ["InStock", "OutOfStock"].includes(available)) query.available = available;
-//   if (minPrice || maxPrice) {
-//     query.Price = {};
-//     if (minPrice) query.Price.$gte = Number(minPrice);
-//     if (maxPrice) query.Price.$lte = Number(maxPrice);
-//   }
-
-//   const skip = (Number(page) - 1) * Number(limit);
-//   const [products, total] = await Promise.all([
-//     Product.find(query)
-//       .populate("categoryId", "Name")
-//       .populate("Brand", "Name")
-//       .sort({ createdAt: -1 })
-//       .skip(skip)
-//       .limit(Number(limit)),
-//     Product.countDocuments(query),
-//   ]);
-
-//   res.status(200).json({
-//     success: true,
-//     total,
-//     page: Number(page),
-//     limit: Number(limit),
-//     data: products,
-//   });
-// });
-
 // @desc   Get product by ID
 // @route  GET /api/product/:id
 // @access Public
@@ -148,17 +109,14 @@ export const getProductById = asyncHandler(async (req, res) => {
     "categoryId",
     "name"
   );
-
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
-
   res.status(200).json({
     message: "Product fetched successfully",
     product,
   });
 });
-
 // @desc   Update product
 // @route  PUT /api/product/:id
 // @access Admin
@@ -211,7 +169,6 @@ export const updateProduct = asyncHandler(async (req, res) => {
     product: updatedProduct,
   });
 });
-
 // @desc   Delete product
 // @route  DELETE /api/product/:id
 // @access Admin
@@ -236,7 +193,6 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     deletedId: id,
   });
 });
-
 // @desc   Get products by category
 // @route  GET /api/product/category/:categoryId
 // @access Public
@@ -247,7 +203,6 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
   if (!categoryExists) {
     return res.status(404).json({ message: "Category not found" });
   }
-
   const products = await Product.find({ categoryId });
 
   if (!products || products.length === 0) {
@@ -255,7 +210,6 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
       .status(404)
       .json({ message: "No products found for this category" });
   }
-
   res.status(200).json({
     message: "Products fetched successfully",
     category: categoryExists.name,
@@ -263,7 +217,6 @@ export const getProductsByCategory = asyncHandler(async (req, res) => {
     products,
   });
 });
-
 // @desc User Add Review
 // @route  GET /api/product/add-review
 // @access Public
@@ -281,7 +234,6 @@ export const AddReviewProduct = asyncHandler(async (req, res) => {
       message: "Review must be a number between 1 and 5",
     });
   }
-
   product.review = review;
   await product.save();
 
@@ -299,7 +251,7 @@ export const GetBestseller = asyncHandler(async (req, res) => {
     { $unwind: "$items" },
     {
       $group: {
-        _id: "$items.product",
+        _id: "$items.productId",
         totalSold: { $sum: "$items.quantity" },
       },
     },
@@ -325,7 +277,6 @@ export const GetBestseller = asyncHandler(async (req, res) => {
       },
     },
   ]);
-
   res.status(200).json({
     success: true,
     count: bestSellers.length,

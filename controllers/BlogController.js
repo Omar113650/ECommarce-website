@@ -87,25 +87,21 @@ export const updateBlog = asyncHandler(async (req, res) => {
   if (!blog) {
     return res.status(404).json({ success: false, message: "Blog not found" });
   }
-
   // Handle image update if provided
   let imageUpdate = product.Image;
   if (req.file) {
     if (product.Image?.publicId) {
       await cloudinaryRemoveImage(product.Image.publicId);
     }
-
     const uploadedImage = await cloudinaryUploadImage(req.file.buffer);
     if (!uploadedImage?.secure_url) {
       return res.status(500).json({ message: "Image upload failed" });
     }
-
     imageUpdate = {
       url: uploadedImage.secure_url,
       publicId: uploadedImage.public_id,
     };
   }
-
   blog.title = title || blog.title;
   blog.content = content || blog.content;
   blog.Tags = Tags || blog.Tags;
