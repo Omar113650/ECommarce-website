@@ -3,6 +3,7 @@ import {
   toggleFavorite,
   getFavorites,
   DeleteFavorites,
+  getTopFavoritesProduct,
 } from "../controllers/WishlistController.js";
 
 import { ValidatedID } from "../middlewares/validateID.js";
@@ -18,5 +19,6 @@ router.delete(
   ValidatedID,
   DeleteFavorites
 );
+router.get("/get-top-favorite-product", VerifyToken, getTopFavoritesProduct);
 
 export default router;

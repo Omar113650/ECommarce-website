@@ -57,20 +57,20 @@ export const DeleteFavorites = asyncHandler(async (req, res) => {
 // @desc   Get top favorite products (most liked by users)
 // @route  GET /api/favorite/top
 // @access Public
-export const getAlotofFavoritesProduct = asyncHandler(async (req, res) => {
+export const getTopFavoritesProduct = asyncHandler(async (req, res) => {
   const favorites = await Favorite.aggregate([
-    { $unwind: "$products" }, // نفك مصفوفة المنتجات لكل مستخدم
+    { $unwind: "$products" },
     {
       $group: {
-        _id: "$products", // نجمع حسب المنتج
-        totalFavorites: { $sum: 1 }, // عدد مرات إضافته للمفضلة
+        _id: "$products",
+        totalFavorites: { $sum: 1 },
       },
     },
-    { $sort: { totalFavorites: -1 } }, // نرتب من الأكثر للمفضلة
-    { $limit: 10 }, // نجيب أول 10 منتجات مثلاً
+    { $sort: { totalFavorites: -1 } },
+    { $limit: 10 },
     {
       $lookup: {
-        from: "products", // اسم Collection المنتجات
+        from: "products",
         localField: "_id",
         foreignField: "_id",
         as: "product",
@@ -88,45 +88,12 @@ export const getAlotofFavoritesProduct = asyncHandler(async (req, res) => {
       },
     },
   ]);
-
   if (!favorites.length) {
     return res.status(404).json({ message: "No favorite products found" });
   }
-
   res.status(200).json({
     message: "Top favorite products fetched successfully",
     count: favorites.length,
     data: favorites,
   });
 });
-// 🧠 شرح الكود:
-// المرحلة	الوظيفة
-// $unwind	يفك كل منتج في المصفوفة products لمستند منفصل
-// $group	يجمع كل المنتجات اللي ليها نفس الـ ID
-// $sum	يحسب عدد المرات اللي المنتج اتضاف فيها للمفضلة
-// $sort	يرتب حسب عدد مرات التفضيل
-// $lookup	يربط مع بيانات المنتج من Collection products
-// $project	يختار الحقول اللي نعرضها في النتيجة
-
-// 💡 النتيجة:
-// هيجيلك JSON بالشكل ده:
-
-// json
-// Copy code
-// [
-//   {
-//     "productId": "6710f97a1234abcd5678ef90",
-//     "name": "iPhone 15 Pro",
-//     "price": 48000,
-//     "image": "https://res.cloudinary.com/.../iphone.jpg",
-//     "totalFavorites": 32
-//   },
-//   {
-//     "productId": "6710f9b21234abcd5678ef93",
-//     "name": "Samsung S24 Ultra",
-//     "price": 42000,
-//     "image": "https://res.cloudinary.com/.../s24.jpg",
-//     "totalFavorites": 27
-//   }
-// ]
-// هل تحب أضيفلك فلتر كمان في الكويري (زي ?category=electronics) عشان تجيب أكثر المنتجات المفضلة داخل فئة معينة فقط؟ ⚙️
