@@ -106,7 +106,7 @@ import { VerifyToken } from "../middlewares/VerifyToken.js";
 const router = express.Router();
 
 // إنشاء جلسة الدفع
-router.post("/checkout/:orderId", createStripeSession);
+router.post("/checkout/:orderId", VerifyToken,createStripeSession);
 
 // Webhook من Stripe
 router.post("/webhook", stripeWebhook);
