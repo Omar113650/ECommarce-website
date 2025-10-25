@@ -10,7 +10,7 @@ import { VerifyToken, VerifyTokenAdmin } from "../middlewares/VerifyToken.js";
 const router = express.Router();
 
 router.post("/create-order", VerifyToken, createOrder);
-router.get("/get-user-orders", VerifyTokenAdmin, getUserOrders);
-router.get("/get-order/:id", VerifyToken, ValidatedID, getOrders);
+router.get("/get-user-orders/:id", VerifyToken, getUserOrders);
+router.get("/get-order/:id", VerifyTokenAdmin, ValidatedID, getOrders);
 
 export default router;

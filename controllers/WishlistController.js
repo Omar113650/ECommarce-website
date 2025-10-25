@@ -29,7 +29,6 @@ export const toggleFavorite = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "Added to favorites", favorite });
   }
 });
-
 // @desc   Get user's favorites
 // @route  GET /api/favorite/:userId
 // @access User
@@ -41,7 +40,6 @@ export const getFavorites = asyncHandler(async (req, res) => {
 
   res.status(200).json(favorite);
 });
-
 // @desc   Get user's favorites
 // @route  GET /api/favorite/:userId
 // @access User
@@ -53,7 +51,6 @@ export const DeleteFavorites = asyncHandler(async (req, res) => {
   await Favorite.DeleteOne();
   res.status(200).json(Find_favorite);
 });
-
 // @desc   Get top favorite products (most liked by users)
 // @route  GET /api/favorite/top
 // @access Public

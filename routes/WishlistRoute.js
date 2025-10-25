@@ -22,3 +22,4 @@ router.delete(
 router.get("/get-top-favorite-product", VerifyToken, getTopFavoritesProduct);
 
 export default router;
+
