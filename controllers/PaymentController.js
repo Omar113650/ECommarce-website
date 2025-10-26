@@ -68,10 +68,6 @@
 
 
 
-
-
-
-
 import Stripe from "stripe";
 import PaymentLog from "../models/Stripe.js";
 import { Order } from "../models/Order.js";
@@ -82,33 +78,32 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-10-16",
 });
 
-
-
 export const createStripeSession = async (req, res) => {
   try {
     const { orderId } = req.params;
     const userId = req.user?._id;
 
+    // جلب الأوردر
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // ✅ تأكد أن في عناصر داخل الأوردر
+    // التأكد من وجود عناصر
     if (!order.items || order.items.length === 0) {
       return res.status(400).json({ message: "No items found in this order" });
     }
 
-    // ✅ بناء line items بناءً على بيانات الأوردر
+    // بناء line items للـ Stripe
     const lineItems = order.items
       .filter((item) => item.Price && item.quantity)
       .map((item) => ({
         price_data: {
           currency: "usd",
           product_data: {
-            name: item.Name || item.Name || "Product",
+            name: item.Name || "Product",
           },
-          unit_amount: Math.round(Number(item.Price || item.Price) * 100),
+          unit_amount: Math.round(Number(item.Price) * 100), // تحويل للدولار سنت
         },
         quantity: Number(item.quantity) || 1,
       }));
@@ -117,42 +112,31 @@ export const createStripeSession = async (req, res) => {
       return res.status(400).json({ message: "Invalid order items format" });
     }
 
-    // const session = await stripe.checkout.sessions.create({
-    //   payment_method_types: ["card"],
-    //   line_items: lineItems,
-    //   mode: "payment",
-    //   metadata: {
-    //     orderId: order._id.toString(),
-    //     userId: userId?.toString(),
-    //   },
-    //   success_url: `${process.env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-    //   cancel_url: `${process.env.CLIENT_URL}/payment/cancel`,
-    // });
+    // حساب المبلغ الكلي بالـ سنت
+    const totalAmount = lineItems.reduce(
+      (sum, item) => sum + item.price_data.unit_amount * item.quantity,
+      0
+    );
+    console.log("Total amount to send to Stripe:", totalAmount);
 
-
-
-
-      const session = await stripe.checkout.sessions.create({
+    // إنشاء جلسة Stripe Checkout
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      // customer_email: user.Email,
       metadata: {
         orderId: order._id.toString(),
         userId: userId?.toString(),
       },
-      success_url: `${process.env.CLIENT_URL}/api/v1/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/api/v1/payment/cancel`,
+      success_url: `${process.env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/payment/cancel`,
     });
-    
-        
-        
 
-
+    // حفظ اللوج
     await PaymentLog.create({
       orderId: order._id,
       paymentReference: session.id,
-      amount: order.totalAmount,
+      amount: totalAmount / 100, // بالدولار
       currency: "usd",
       status: "pending",
       paymentMethod: "card",
@@ -174,20 +158,21 @@ export const createStripeSession = async (req, res) => {
   }
 };
 
-
-
 export const checkPaymentStatus = async (req, res) => {
   try {
     const { session_id } = req.query;
-    if (!session_id) return res.status(400).json({ message: "Missing session_id" });
+    if (!session_id)
+      return res.status(400).json({ message: "Missing session_id" });
 
     const payment = await PaymentLog.findOne({ paymentReference: session_id });
-    if (!payment) return res.status(404).json({ message: "Payment not found" });
+    if (!payment)
+      return res.status(404).json({ message: "Payment not found" });
 
     return res.status(200).json({ status: payment.status });
   } catch (error) {
-    res.status(500).json({ message: "Error checking payment status", error: error.message });
+    res.status(500).json({
+      message: "Error checking payment status",
+      error: error.message,
+    });
   }
 };
-
-
