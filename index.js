@@ -15,6 +15,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import statusMonitor from "express-status-monitor";
 import path from "path";
 import { fileURLToPath } from "url";
+import StripeWebhook from './routes/stripeWebhook.js'
 
 dotenv.config({ path: ".env" });
 connectDB();
@@ -79,6 +80,9 @@ app.use("/api/v1/contact-us", contactRoutes);
 app.use("/api/v1/brand", brandRoutes);
 app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/payment", paymentRoutes);
+app.use("/api/v1/payment",StripeWebhook );
+
+
 
 app.use(notfound);
 app.use(errorHandler);

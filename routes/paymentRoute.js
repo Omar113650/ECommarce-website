@@ -11,7 +11,6 @@
 // // Webhook من Stripe
 // router.post("/webhook", express.raw({ type: "application/json" }), stripeWebhook);
 
-
 // // ✅ صفحة النجاح بعد الدفع
 // router.get("/success", (req, res) => {
 //   const sessionId = req.query.session_id;
@@ -66,55 +65,23 @@
 // // router.get("/status", checkPaymentStatus);
 // export default router;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import express from "express";
-import { createStripeSession, checkPaymentStatus } from "../controllers/PaymentController.js";
-import { stripeWebhook } from "../controllers/webhookController.js";
+
+import bodyParser from "body-parser";
+import {
+  createStripeSession,
+  checkPaymentStatus,
+} from "../controllers/PaymentController.js";
+
 import { VerifyToken } from "../middlewares/VerifyToken.js";
 
 const router = express.Router();
-
 // إنشاء جلسة الدفع
-router.post("/checkout/:orderId", VerifyToken,createStripeSession);
-
-// Webhook من Stripe
-router.post("/webhook", stripeWebhook);
+router.post("/checkout/:orderId", VerifyToken, createStripeSession);
 
 // ✅ صفحة النجاح بعد الدفع
 router.get("/success", (req, res) => {
   const sessionId = req.query.session_id;
-
   res.send(`
     <html>
       <head>
@@ -171,11 +138,6 @@ router.get("/cancel", (req, res) => {
 router.get("/status", checkPaymentStatus);
 
 export default router;
-
-
-
-
-
 
 // :
 // الحالة	السلوك

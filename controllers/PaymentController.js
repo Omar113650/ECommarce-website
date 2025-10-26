@@ -83,6 +83,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 
+
 export const createStripeSession = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -116,17 +117,37 @@ export const createStripeSession = async (req, res) => {
       return res.status(400).json({ message: "Invalid order items format" });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    // const session = await stripe.checkout.sessions.create({
+    //   payment_method_types: ["card"],
+    //   line_items: lineItems,
+    //   mode: "payment",
+    //   metadata: {
+    //     orderId: order._id.toString(),
+    //     userId: userId?.toString(),
+    //   },
+    //   success_url: `${process.env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+    //   cancel_url: `${process.env.CLIENT_URL}/payment/cancel`,
+    // });
+
+
+
+
+      const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
+      // customer_email: user.Email,
       metadata: {
         orderId: order._id.toString(),
         userId: userId?.toString(),
       },
-      success_url: `${process.env.CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/payment/cancel`,
+      success_url: `${process.env.CLIENT_URL}/api/v1/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/api/v1/payment/cancel`,
     });
+    
+        
+        
+
 
     await PaymentLog.create({
       orderId: order._id,
