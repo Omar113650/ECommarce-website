@@ -21,6 +21,25 @@ export const VerifyToken = asyncHandler(async (req, res, next) => {
   }
 });
 
+
+
+
+export const OptionalVerifyToken = asyncHandler(async (req, res, next) => {
+  const authToken = req.headers.authorization;
+  if (authToken && authToken.startsWith("Bearer ")) {
+    const token = authToken.split(" ")[1];
+    try {
+      const decodedPayload = JWT.verify(token, process.env.JWT_SECRET);
+      req.user = decodedPayload;
+    } catch (err) {
+      console.error("Invalid token:", err.message);
+    }
+  }
+  next();
+});
+
+
+
 export const VerifyTokenAdmin = asyncHandler(async (req, res, next) => {
   await VerifyToken(req, res, async () => {
      if (req.user && req.user.role === "Admin") {

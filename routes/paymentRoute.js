@@ -151,3 +151,77 @@ export default router;
 
 // Card → نفس الطلب لكن { paymentMethod: "Card" }
 // ثم تستخدم window.location = res.data.url; لو رجع URL من Stripe.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// k الحقيقي فعلاً (الطريقة الصح)
+
+// خلي الكود كده 👇:
+
+// router.post(
+//   "/webhook",
+//   express.raw({ type: "application/json" }),
+//   async (req, res) => {
+//     const sig = req.headers["stripe-signature"];
+//     let event;
+
+//     try {
+//       event = stripe.webhooks.constructEvent(
+//         req.body,
+//         sig,
+//         process.env.STRIPE_WEBHOOK_SECRET
+//       );
+
+
+// وساعتها تفتح التيرمنال وتكتب:
+
+// stripe listen --forward-to localhost:8000/api/v1/payment/webhook
+
+
+// وهتجيلك رسالة فيها الـ whsec_... انسخها وحطها في .env:
+
+// STRIPE_WEBHOOK_SECRET=whsec_***************
+
+
+// دلوقتي لما تعمل checkout session من Stripe Dashboard، Stripe هيبعت الريكويست ومعاه الـ header الصحيح، وهتشوف في اللوج:
+
+// ✅ Checkout session completed: cs_test_...
+
+
+// ومفيش أي Error 🎉
+
+// 🧠 الخلاصة السريعة:
+// الوضع	المطلوب تعديله
+// اختبار من Postman	استخدم express.json() وشيل التحقق
+// اختبار من Stripe CLI أو Live	استخدم express.raw() وارجع تحقق من التوقيع
+
+// تحب أظبطلك الكود بحيث يدعم الاتنين معًا؟
+// يعني يعرف لما يكون جاي من Stripe أو Postman 

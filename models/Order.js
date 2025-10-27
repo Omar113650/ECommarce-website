@@ -2,10 +2,18 @@ import mongoose from "mongoose";
 
 const OrderSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     items: [
       {
-        productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
         Name: { type: String, required: true },
         quantity: { type: Number, min: 1 },
         Price: { type: Number },
@@ -31,20 +39,34 @@ const OrderSchema = new mongoose.Schema(
       required: true,
       default: "Cash",
     },
-    // paymentStatus: {
-    //   type: String,
-    //   enum: ["Pending", "Paid", "Failed"],
-    //   default: "Pending",
-    // },
     paymentStatus: {
-  type: String,
-  enum: ["Pending", "Processing", "Paid", "Failed"],
-  default: "Pending",
-},
-
+      type: String,
+      enum: ["Pending", "Paid", "Failed"],
+      default: "Pending",
+    },
   },
   { timestamps: true }
 );
 
-
 export const Order = mongoose.model("Order", OrderSchema);
+
+// const orderSchema = new mongoose.Schema({
+//   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+//   items: [
+//     {
+//       productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+//       Name: String,
+//       Price: Number,
+//       quantity: Number,
+//     }
+//   ],
+//   totalAmount: { type: Number, required: true },
+//   status: {
+//     type: String,
+//     enum: ["pending", "processing", "completed", "cancelled"], // ضيف "pending" هنا
+//     default: "pending",
+//   },
+//   paymentIntentId: { type: String },
+// }, { timestamps: true });
+
+// export const Order = mongoose.model("Order", orderSchema);
