@@ -21,9 +21,6 @@ export const VerifyToken = asyncHandler(async (req, res, next) => {
   }
 });
 
-
-
-
 export const OptionalVerifyToken = asyncHandler(async (req, res, next) => {
   const authToken = req.headers.authorization;
   if (authToken && authToken.startsWith("Bearer ")) {
@@ -38,11 +35,9 @@ export const OptionalVerifyToken = asyncHandler(async (req, res, next) => {
   next();
 });
 
-
-
 export const VerifyTokenAdmin = asyncHandler(async (req, res, next) => {
   await VerifyToken(req, res, async () => {
-     if (req.user && req.user.role === "Admin") {
+    if (req.user && req.user.role === "Admin") {
       next();
     } else {
       res.status(403);

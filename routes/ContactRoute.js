@@ -21,6 +21,6 @@ router.post(
 router.get("/get-all-Message", VerifyTokenAdmin, getAllContacts);
 router.get("/:id", VerifyTokenAdmin, ValidatedID, getContactById);
 router.put("/update-message/:id", VerifyToken, ValidatedID, updateContact);
-router.delete("/:id", VerifyToken, deleteContact);
+router.delete("/:id", VerifyToken,ValidatedID, deleteContact);
 
 export default router;

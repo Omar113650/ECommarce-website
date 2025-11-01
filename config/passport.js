@@ -23,7 +23,7 @@ passport.use(
             picture: profile.photos?.[0]?.value || "",
           });
         }
-        return done(null, user); // مهم: رجع user من DB مش profile
+        return done(null, user);
       } catch (error) {
         console.error("Google Auth Error:", error);
         return done(error, null);
@@ -45,4 +45,3 @@ passport.deserializeUser(async (id, done) => {
 });
 
 export default passport;
-
