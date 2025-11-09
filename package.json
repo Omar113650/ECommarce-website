@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "@modelcontextprotocol/inspector": "^0.17.2",
+    "@modelcontextprotocol/sdk": "^1.21.0",
+    "amqplib": "^0.10.9",
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
     "cloudinary": "^2.7.0",
@@ -38,7 +41,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "vercel-start": "node index.js"
+    "vercel-start": "node index.js",
+    "worker": "nodemon worker.js",
+    "start:worker": "node worker.js"
   },
   "author": "Omar Elhelaly",
   "license": "ISC",

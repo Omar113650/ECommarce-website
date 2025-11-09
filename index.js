@@ -20,6 +20,7 @@ import StripeWebhook from './routes/stripeWebhook.js'
 dotenv.config({ path: ".env" });
 connectDB();
 
+
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -93,3 +94,64 @@ app.listen(PORT, () => {
 });
 
 // https://e-commarce-website-eight.vercel.app
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

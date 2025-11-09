@@ -8,88 +8,202 @@ import {
 // @desc   create category
 // @route  GET /api/category
 // @access Private
+// export const CreateCategory = asyncHandler(async (req, res) => {
+//   const { name } = req.body;
+//   if (!name?.trim()) {
+//     return res.status(400).json({ message: "Category name is required" });
+//   }
+//   if (!req.file) {
+//     return res.status(400).json({ message: "Product image is required" });
+//   }
+//   const uploadResult = await cloudinaryUploadImage(req.file.buffer);
+//   if (!uploadResult?.secure_url) {
+//     return res
+//       .status(500)
+//       .json({ message: "Failed to upload image to Cloudinary" });
+//   }
+//   const category = await Category.create({ name: name.trim() });
+
+//   res.status(201).json({
+//     message: "Category created successfully",
+//     category,
+//     Image: {
+//       url: uploadResult.secure_url,
+//       publicId: uploadResult.public_id,
+//     },
+//   });
+// });
+
 export const CreateCategory = asyncHandler(async (req, res) => {
   const { name } = req.body;
+
   if (!name?.trim()) {
     return res.status(400).json({ message: "Category name is required" });
   }
+
   if (!req.file) {
-    return res.status(400).json({ message: "Product image is required" });
+    return res.status(400).json({ message: "Category image is required" });
   }
+
+  // Upload Image to Cloudinary
   const uploadResult = await cloudinaryUploadImage(req.file.buffer);
   if (!uploadResult?.secure_url) {
     return res
       .status(500)
       .json({ message: "Failed to upload image to Cloudinary" });
   }
-  const category = await Category.create({ name: name.trim() });
 
-  res.status(201).json({
-    message: "Category created successfully",
-    category,
+  // Create category WITH image data
+  const category = await Category.create({
+    name: name.trim(),
     Image: {
       url: uploadResult.secure_url,
       publicId: uploadResult.public_id,
     },
   });
+
+  res.status(201).json({
+    message: "Category created successfully",
+    category,
+  });
 });
+
 // @desc   Get all category
 // @route  GET /api/category
 // @access Public
+// export const GetCategory = asyncHandler(async (req, res) => {
+//   const { name } = req.query;
+//   const query = {};
+
+//   if (name) {
+//     name = name;
+//     if (
+//       [
+//         "Beverages",
+//         "Biscuits & Snacks",
+//         "Breads & Bakery",
+//         "Breakfast & Dairy",
+//         "Frozen Foods",
+//         "Fruits & Vegetables",
+//         "Grocery & Staples",
+//         "Meats & Seafood",
+//       ].includes(name)
+//     ) {
+//       query.name = name;
+//     }
+//   }
+//   const categories = await Category.find().sort({ createdAt: -1 });
+
+//   if (!categories.length) {
+//     return res.status(404).json({ message: "No categories found" });
+//   }
+//   res.status(200).json({
+//     message: "Categories fetched successfully",
+//     total: categories.length,
+//     categories,
+    
+//   });
+// });
 export const GetCategory = asyncHandler(async (req, res) => {
-  const { name } = req.query;
+  let { name } = req.query;
   const query = {};
 
-  if (name) {
-    name = name;
-    if (
-      [
-        "Beverages",
-        "Biscuits & Snacks",
-        "Breads & Bakery",
-        "Breakfast & Dairy",
-        "Frozen Foods",
-        "Fruits & Vegetables",
-        "Grocery & Staples",
-        "Meats & Seafood",
-      ].includes(name)
-    ) {
-      query.name = name;
-    }
+  // فلترة بالاسم لو موجود
+  if (name?.trim()) {
+    query.name = { $regex: name.trim(), $options: "i" };
   }
-  const categories = await Category.find().sort({ createdAt: -1 });
+
+  // نرجع فقط (name , Image) بدون أي بيانات زيادة
+  const categories = await Category.find(query, { name: 1, Image: 1 })
+    .sort({ createdAt: -1 });
 
   if (!categories.length) {
     return res.status(404).json({ message: "No categories found" });
   }
+
   res.status(200).json({
     message: "Categories fetched successfully",
     total: categories.length,
     categories,
   });
 });
+
 // @desc   delete all category
 // @route  GET /api/category
 // @access Public
-export const DeleteCategory = asyncHandler(async (req, res) => {
-  const { categoryId } = req.params;
+// export const DeleteCategory = asyncHandler(async (req, res) => {
+//   const { categoryId } = req.params;
 
-  const category = await Category.findById(categoryId);
+//   const category = await Category.findById(categoryId);
+//   if (!category) {
+//     return res.status(404).json({ message: "Category not found" });
+//   }
+
+//   // Remove image from Cloudinary
+//   if (category.Image?.publicId) {
+//     await cloudinaryRemoveImage(product.Image.publicId);
+//   }
+//   await Category.findByIdAndDelete(categoryId);
+
+//   res.status(200).json({
+//     message: "Category deleted successfully",
+//     deletedId: categoryId,
+//   });
+// });
+
+// export const DeleteCategory = asyncHandler(async (req, res) => {
+//   const { categoryId } = req.params;
+
+//   const category = await Category.findById(categoryId);
+//   if (!category) {
+//     return res.status(404).json({ message: "Category not found" });
+//   }
+
+//   // Remove image from Cloudinary if exists
+//   if (category.Image?.publicId) {
+//     await cloudinaryRemoveImage(category.Image.publicId);
+//   }
+
+//   await Category.findByIdAndDelete(categoryId);
+
+//   res.status(200).json({
+//     message: "Category deleted successfully",
+//     deletedId: categoryId,
+//   });
+// });
+
+
+import mongoose from "mongoose";
+
+export const DeleteCategory = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+
+  // Validate ObjectId first
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID" });
+  }
+
+  const category = await Category.findById(id);
   if (!category) {
     return res.status(404).json({ message: "Category not found" });
   }
 
-  // Remove image from Cloudinary
-  if (product.Image?.publicId) {
-    await cloudinaryRemoveImage(product.Image.publicId);
+  // Delete image from Cloudinary if exists
+  if (category.Image?.publicId) {
+    await cloudinaryRemoveImage(category.Image.publicId);
   }
-  await Category.findByIdAndDelete(categoryId);
 
-  res.status(200).json({
+  await category.deleteOne();
+
+  return res.status(200).json({
     message: "Category deleted successfully",
-    deletedId: categoryId,
+    deletedId: id,
   });
 });
+
+
+
 // @desc   update all category
 // @route  GET /api/category
 // @access Public

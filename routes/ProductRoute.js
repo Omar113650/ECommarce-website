@@ -18,17 +18,17 @@ const router = express.Router();
 
 router.post(
   "/add-product",
-  VerifyTokenAdmin,
+  // VerifyTokenAdmin,
   validate(ProductValidation),
   upload.single("Image"),
   createProduct
 );
-router.get("/get-all-product", VerifyToken, getAllProducts);
+router.get("/get-all-product", getAllProducts);
 router.get("/get-product/:id", VerifyToken, ValidatedID, getProductById);
 router.put("/update-product/:id", VerifyTokenAdmin, ValidatedID, updateProduct);
 router.delete(
   "/delete-product/:id",
-  VerifyTokenAdmin,
+  // VerifyTokenAdmin,
   ValidatedID,
   deleteProduct
 );

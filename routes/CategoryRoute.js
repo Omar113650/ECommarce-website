@@ -15,7 +15,7 @@ const router = express.Router();
 // router.get("/count/total", Count);
 router.post(
   "/add-category",
-  VerifyTokenAdmin,
+  // VerifyTokenAdmin,
   validate(CategoryValidate),
   upload.single("Image"),
   CreateCategory
@@ -28,7 +28,7 @@ router.put(
   UpdateCategory
 );
 router.delete(
-  "/delete-category/:categoryId",
+  "/delete-category/:id",
   VerifyTokenAdmin,
   ValidatedID,
   DeleteCategory
