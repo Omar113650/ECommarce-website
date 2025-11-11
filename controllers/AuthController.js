@@ -154,33 +154,33 @@ export const loginUser = asyncHandler(async (req, res) => {
   const { AccessToken, refreshToken } = generateTokens(user);
   setRefreshCookie(res, refreshToken);
 
-  // await sendEmail({
-  //   to: user.Email,
-  //   subject: "Welcome Back to Our Store 🛒",
-  //   text: `Hello ${user.Name}, you have logged in successfully! Start shopping now!`,
-  //   html: `
-  //   <div style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px; text-align:center;">
-  //     <div style="max-width:600px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-  //       <h2 style="color:#2c3e50;">Welcome Back, ${user.Name} 👋</h2>
-  //       <p style="font-size:16px; color:#555;">
-  //         We're thrilled to see you again at <strong style="color:#e67e22;">Our Store</strong>!
-  //       </p>
-  //       <p style="font-size:15px; color:#333; line-height:1.6;">
-  //         Continue exploring our products and enjoy an effortless shopping experience.
-  //         <br><br>
-  //         <a href="https://your-ecommerce-site.com/dashboard" 
-  //            style="display:inline-block; padding:12px 24px; margin-top:15px; background:#e67e22; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">
-  //           Go to Dashboard
-  //         </a>
-  //       </p>
-  //       <hr style="margin:30px 0; border:none; border-top:1px solid #eee;">
-  //       <p style="font-size:13px; color:#999;">
-  //         © ${new Date().getFullYear()} Our Store. All rights reserved.
-  //       </p>
-  //     </div>
-  //   </div>
-  // `,
-  // });
+  await sendEmail({
+    to: user.Email,
+    subject: "Welcome Back to Our Store 🛒",
+    text: `Hello ${user.Name}, you have logged in successfully! Start shopping now!`,
+    html: `
+    <div style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px; text-align:center;">
+      <div style="max-width:600px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+        <h2 style="color:#2c3e50;">Welcome Back, ${user.Name} 👋</h2>
+        <p style="font-size:16px; color:#555;">
+          We're thrilled to see you again at <strong style="color:#e67e22;">Our Store</strong>!
+        </p>
+        <p style="font-size:15px; color:#333; line-height:1.6;">
+          Continue exploring our products and enjoy an effortless shopping experience.
+          <br><br>
+          <a href="https://your-ecommerce-site.com/dashboard" 
+             style="display:inline-block; padding:12px 24px; margin-top:15px; background:#e67e22; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">
+            Go to Dashboard
+          </a>
+        </p>
+        <hr style="margin:30px 0; border:none; border-top:1px solid #eee;">
+        <p style="font-size:13px; color:#999;">
+          © ${new Date().getFullYear()} Our Store. All rights reserved.
+        </p>
+      </div>
+    </div>
+  `,
+  });
 
   res.status(200).json({
     message: "Login successful",
