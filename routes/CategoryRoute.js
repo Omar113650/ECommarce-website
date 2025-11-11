@@ -20,7 +20,8 @@ router.post(
   upload.single("Image"),
   CreateCategory
 );
-router.get("/get-category", VerifyToken, GetCategory);
+// VerifyToken
+router.get("/get-category", GetCategory);
 router.put(
   "/update-category/:categoryId",
   VerifyTokenAdmin,

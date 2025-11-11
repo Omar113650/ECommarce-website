@@ -34,12 +34,12 @@ router.delete(
 );
 router.get(
   "/category/:categoryId",
-  VerifyToken,
-  ValidatedID,
+  // VerifyToken,
+  // ValidatedID,
   getProductsByCategory
 );
 
 router.post("/add-review-product/:id", VerifyToken, AddReviewProduct);
-router.get("/get-bestseller", VerifyToken, GetBestseller);
+router.get("/get-bestseller", GetBestseller);
 
 export default router;

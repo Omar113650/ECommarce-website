@@ -78,14 +78,14 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   }
 
   // Pagination
-  const skip = (Number(page) - 1) * Number(limit);
+  // const skip = (Number(page) - 1) * Number(limit);
 
   const products = await Product.find(query)
     .populate("categoryId", "Name")
     .populate("Brand", "Name")
     .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(Number(limit));
+    // .skip(skip)
+    // .limit(Number(limit));
 
   const total = await Product.countDocuments(query);
 
