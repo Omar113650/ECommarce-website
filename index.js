@@ -15,11 +15,10 @@ import mongoSanitize from "express-mongo-sanitize";
 import statusMonitor from "express-status-monitor";
 import path from "path";
 import { fileURLToPath } from "url";
-import StripeWebhook from './routes/stripeWebhook.js'
+import StripeWebhook from "./routes/stripeWebhook.js";
 
 dotenv.config({ path: ".env" });
 connectDB();
-
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -53,7 +52,6 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-
 app.use(express.json());
 
 app.use(passport.initialize());
@@ -84,9 +82,7 @@ app.use("/api/v1/contact-us", contactRoutes);
 app.use("/api/v1/brand", brandRoutes);
 app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/payment", paymentRoutes);
-app.use("/api/v1/payment",StripeWebhook );
-
-
+app.use("/api/v1/payment", StripeWebhook);
 
 app.use(notfound);
 app.use(errorHandler);
@@ -97,27 +93,6 @@ app.listen(PORT, () => {
 });
 
 // https://e-commarce-website-eight.vercel.app
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // شرح السطر ده:
 // origin: "https://e-commarce-website-eight.vercel.app"
@@ -150,57 +125,3 @@ app.listen(PORT, () => {
 // ده بيخلي السيرفر يسمح بالـ requests سواء من Vercel أو localhost أثناء الـ development.
 
 // تحب أشرحلك كمان إزاي تتأكد إن إعدادات الـ CORS اتطبقت فعلاً (يعني إزاي تختبرها من المتصفح أو Postman)؟
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
