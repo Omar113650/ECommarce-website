@@ -6,7 +6,7 @@ import connectDB from "./config/connectDB.js";
 import passport from "./config/passport.js";
 import hpp from "hpp";
 import helmet from "helmet";
-import cors from "cors";
+// import cors from "cors";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
 import { notfound, errorHandler } from "./middlewares/error.js";
@@ -29,10 +29,10 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(session({ secret: "SECRET", resave: false, saveUninitialized: true }));
 app.use(helmet());
 app.use(hpp());
-app.use(cors({
-  origin: "https://e-commarce-website-eight.vercel.app",
-  credentials: true
-}));
+// app.use(cors({
+//   origin: "https://e-commarce-website-eight.vercel.app",
+//   credentials: true
+// }));
 app.use(morgan());
 app.use(cookieParser());
 app.use((req, res, next) => {
