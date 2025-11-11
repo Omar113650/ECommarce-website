@@ -28,11 +28,16 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(session({ secret: "SECRET", resave: false, saveUninitialized: true }));
 app.use(helmet());
 app.use(hpp());
-app.use(cors({
-  origin: "https://e-commarce-website-eight.vercel.app",
-  
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://e-commerce-website-eight.vercel.app",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(morgan());
 app.use(cookieParser());
 app.use((req, res, next) => {
