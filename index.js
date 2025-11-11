@@ -29,7 +29,10 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(session({ secret: "SECRET", resave: false, saveUninitialized: true }));
 app.use(helmet());
 app.use(hpp());
-app.use(cors());
+app.use(cors({
+  origin: "https://e-commarce-website-eight.vercel.app",
+  credentials: true
+}));
 app.use(morgan());
 app.use(cookieParser());
 app.use((req, res, next) => {
@@ -101,6 +104,52 @@ app.listen(PORT, () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// شرح السطر ده:
+// origin: "https://e-commarce-website-eight.vercel.app"
+// ده معناه إن السيرفر (الـ backend) يسمح فقط بطلبات جاية من الموقع ده (الـ frontend على Vercel).
+// لو أي موقع تاني حاول يبعت request → المتصفح هيمنعه.
+
+// credentials: true
+// ده بيسمح إن الكوكيز أو التوكن أو أي بيانات حساسة تتبعت مع الطلب (زي الـ JWT أو الـ session cookie).
+// وده ضروري لو عندك نظام تسجيل دخول أو توكن محفوظ في الكوكيز.
+
+// ⚠️ مهم جدًا:
+// لما تستخدم credentials: true لازم تتأكد إن الرد (response) فعلاً بيضيف الـ headers دي:
+// Access-Control-Allow-Origin: https://e-commarce-website-eight.vercel.app
+// Access-Control-Allow-Credentials: true
+
+// المتصفح هو اللي بيتأكد من دول، لو واحد منهم ناقص → يرفض الرد.
+
+// ✅ نصيحة إضافية:
+// لو بتجرب من localhost كمان أثناء التطوير، تقدر تعمل كده:
+// const allowedOrigins = [
+//   "http://localhost:5173",
+//   "https://e-commarce-website-eight.vercel.app"
+// ];
+
+// app.use(cors({
+//   origin: allowedOrigins,
+//   credentials: true
+// }));
+
+// ده بيخلي السيرفر يسمح بالـ requests سواء من Vercel أو localhost أثناء الـ development.
+
+// تحب أشرحلك كمان إزاي تتأكد إن إعدادات الـ CORS اتطبقت فعلاً (يعني إزاي تختبرها من المتصفح أو Postman)؟
 
 
 

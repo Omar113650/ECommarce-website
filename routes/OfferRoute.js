@@ -21,7 +21,7 @@ router.post(
   upload.single("Image"),
   createOffer
 );
-router.get("/get-all-offer", VerifyToken, getAllOffers);
+router.get("/get-all-offer", getAllOffers);
 router.get("/top-offer", VerifyToken, getTopOffers);
 router.put("/update-offer/:id", VerifyTokenAdmin, ValidatedID, updateOffer);
 router.delete("/:id", VerifyTokenAdmin, ValidatedID, deleteOffer);
