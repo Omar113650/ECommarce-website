@@ -82,42 +82,42 @@ export const RegisterUser = asyncHandler(async (req, res) => {
 
 
   
-  // 🚀 Queue welcome email (NON-BLOCKING!)
-  try {
-    await sendEmailToQueue(
-      {
-        to: user.Email,
-        subject: "Welcome to Our E-commerce Store 🛒",
-        text: `Hello ${user.Name}, your account has been created successfully! Start shopping now!`,
-        html: `
-          <div style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px; text-align:center;">
-            <div style="max-width:600px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-              <h2 style="color:#2c3e50;">Welcome, ${user.Name} 👋</h2>
-              <p style="font-size:16px; color:#555;">
-                We're thrilled to have you at <strong style="color:#e67e22;">E-commerce Store</strong>!
-              </p>
-              <p style="font-size:15px; color:#333; line-height:1.6;">
-                Your account is ready. Start exploring our products and enjoy a seamless shopping experience.
-                <br><br>
-                <a href="https://your-ecommerce-site.com/login" 
-                   style="display:inline-block; padding:12px 24px; margin-top:15px; background:#e67e22; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">
-                  Go to Dashboard
-                </a>
-              </p>
-              <hr style="margin:30px 0; border:none; border-top:1px solid #eee;">
-              <p style="font-size:13px; color:#999;">
-                © ${new Date().getFullYear()} E-commerce Store. All rights reserved.
-              </p>
-            </div>
-          </div>
-        `,
-      },
-      8 // High priority (0-10, where 10 is highest)
-    );
-  } catch (error) {
-    // Don't fail registration if email queuing fails
-    console.error('⚠️ Failed to queue welcome email:', error.message);
-  }
+  // // 🚀 Queue welcome email (NON-BLOCKING!)
+  // try {
+  //   await sendEmailToQueue(
+  //     {
+  //       to: user.Email,
+  //       subject: "Welcome to Our E-commerce Store 🛒",
+  //       text: `Hello ${user.Name}, your account has been created successfully! Start shopping now!`,
+  //       html: `
+  //         <div style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px; text-align:center;">
+  //           <div style="max-width:600px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+  //             <h2 style="color:#2c3e50;">Welcome, ${user.Name} 👋</h2>
+  //             <p style="font-size:16px; color:#555;">
+  //               We're thrilled to have you at <strong style="color:#e67e22;">E-commerce Store</strong>!
+  //             </p>
+  //             <p style="font-size:15px; color:#333; line-height:1.6;">
+  //               Your account is ready. Start exploring our products and enjoy a seamless shopping experience.
+  //               <br><br>
+  //               <a href="https://your-ecommerce-site.com/login" 
+  //                  style="display:inline-block; padding:12px 24px; margin-top:15px; background:#e67e22; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">
+  //                 Go to Dashboard
+  //               </a>
+  //             </p>
+  //             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;">
+  //             <p style="font-size:13px; color:#999;">
+  //               © ${new Date().getFullYear()} E-commerce Store. All rights reserved.
+  //             </p>
+  //           </div>
+  //         </div>
+  //       `,
+  //     },
+  //     8 // High priority (0-10, where 10 is highest)
+  //   );
+  // } catch (error) {
+  //   // Don't fail registration if email queuing fails
+  //   console.error('⚠️ Failed to queue welcome email:', error.message);
+  // }
 
   res.status(201).json({
     message: "Registration successful.",
