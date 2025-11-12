@@ -106,7 +106,7 @@ export const getCart = asyncHandler(async (req, res) => {
     if (userId) {
       const cart = await Cart.findOne({ userId }).populate(
         "items.productId",
-        "Name  Price"
+        "Name  Price Image"
       );
 
       if (!cart || cart.items.length === 0) {
@@ -123,6 +123,7 @@ export const getCart = asyncHandler(async (req, res) => {
         name: item.productId.Name,
         price: item.productId.Price,
         quantity: item.quantity,
+        Image:item.productId.Image
       }));
 
       return res.status(200).json({
@@ -135,7 +136,7 @@ export const getCart = asyncHandler(async (req, res) => {
     }
     const guestCart = await Cart.findOne({ sessionId }).populate(
       "items.productId",
-      "Name Price"
+      "Name Price Image"
     );
 
     if (!guestCart || guestCart.items.length === 0) {
@@ -152,6 +153,7 @@ export const getCart = asyncHandler(async (req, res) => {
       name: item.productId.Name,
       price: item.productId.Price,
       quantity: item.quantity,
+      Image:item.productId.Image
     }));
 
     return res.status(200).json({
