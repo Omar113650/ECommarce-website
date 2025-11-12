@@ -33,6 +33,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://e-commerce-website-eight.vercel.app",
+      "http://localhost:3000",
     ],
     
     credentials: true,
