@@ -20,7 +20,7 @@ router.post(
   upload.single("Image"),
   createBlog
 );
-router.get("/get-all-blog", VerifyToken, getAllBlogs);
+router.get("/get-all-blog", getAllBlogs);
 router.get("/:id", VerifyToken, ValidatedID, getBlogById);
 router.put("/update-blog/:id", VerifyToken, ValidatedID, updateBlog);
 router.delete("/delete-blog/:id", VerifyToken, ValidatedID, deleteBlog);

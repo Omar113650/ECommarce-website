@@ -34,6 +34,7 @@ app.use(
       "http://localhost:5173",
       "https://e-commerce-website-eight.vercel.app",
     ],
+    
     credentials: true,
   })
 );
@@ -131,3 +132,9 @@ app.listen(PORT, () => {
 // ده بيخلي السيرفر يسمح بالـ requests سواء من Vercel أو localhost أثناء الـ development.
 
 // تحب أشرحلك كمان إزاي تتأكد إن إعدادات الـ CORS اتطبقت فعلاً (يعني إزاي تختبرها من المتصفح أو Postman)؟
+// You said:
+// كده ؟؟؟رapp.use(cors({
+//   origin: "http://localhost:5173","https://e-commarce-website-eight.vercel.app",
+  
+//   credentials: true
+// }));

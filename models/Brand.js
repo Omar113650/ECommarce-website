@@ -7,7 +7,7 @@ const BrandSchema = new mongoose.Schema(
       required: true,
       minlength: 3,
       maxlength: 50,
-      enum: ["Frito Lay", " Quaker", "Cola", "Orea", "Welchs"],
+      enum: ["Frito Lay", "Quaker", "Cola", "Orea", "Welchs"],
     },
   },
   { timestamps: true }

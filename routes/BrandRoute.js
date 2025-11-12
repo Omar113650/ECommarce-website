@@ -18,7 +18,7 @@ router.post(
   validate(BrandValidate),
   createBrand
 );
-router.get("/get-all-brand", VerifyToken, getAllBrands);
+router.get("/get-all-brand", getAllBrands);
 router.get("/:id", VerifyToken, ValidatedID, getBrandById);
 router.put("/update-brand/:id", VerifyTokenAdmin, ValidatedID, updateBrand);
 router.delete("/:id", VerifyTokenAdmin, ValidatedID, deleteBrand);
