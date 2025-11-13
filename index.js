@@ -32,10 +32,11 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://e-commerce-website-eight.vercel.app",
+      // "https://e-commerce-website-eight.vercel.app",
       "https://e-commarce-website-eight.vercel.app",
       "http://localhost:3000",
     ],
+  
     credentials: true, // عشان الكوكيز تتبعت
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
