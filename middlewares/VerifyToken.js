@@ -33,7 +33,7 @@ export const VerifyToken1 = asyncHandler(async (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = JWT.verify(token, process.env.JWT_SECRET);
 
     // مهم: req.user.id = decoded.id (مش _id)
     req.user = {
