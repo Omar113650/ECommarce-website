@@ -653,6 +653,79 @@ export const addToCart = asyncHandler(async (req, res) => {
 // });
 
 
+// export const getCart = asyncHandler(async (req, res) => {
+//   const userId = req.user?.id;
+//   const sessionId = req.sessionID;
+
+//   try {
+//     const query = userId ? { userId } : { sessionId };
+//     const cart = await Cart.findOne(query).populate("items.productId", "Name Price Image");
+
+//     if (!cart || cart.items.length === 0) {
+//       return res.status(200).json({
+//         message: "Cart is empty",
+//         cart: { items: [], totalPrice: 0 }, // كارت فاضي بدون أي default products
+//       });
+//     }
+
+//     const items = cart.items.map(item => ({
+//       id: item._id,
+//       productId: item.productId._id,
+//       name: item.productId.Name,
+//       price: item.productId.Price,
+//       quantity: item.quantity,
+//       Image: item.productId.Image
+//     }));
+
+//     const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+//     return res.status(200).json({
+//       message: userId ? "User cart fetched successfully" : "Guest cart fetched successfully",
+//       cart: { items, totalPrice },
+//     });
+
+//   } catch (err) {
+//     console.error("Error getting cart:", err);
+//     res.status(500).json({ message: "Something went wrong", error: err.message });
+//   }
+// });
+
+// export const getCart = asyncHandler(async (req, res) => {
+//   const userId = req.user?.id;
+//   const sessionId = req.sessionID;
+
+//   try {
+//     const query = userId ? { userId } : { sessionId };
+//     const cart = await Cart.findOne(query).populate("items.productId", "Name Price Image");
+
+//     if (!cart || cart.items.length === 0) {
+//       return res.status(200).json({
+//         message: "Cart fetched successfully",
+//         cart: { items: [], totalPrice: 0 }, // فاضي بدون أي default products
+//       });
+//     }
+
+//     const items = cart.items.map(item => ({
+//       id: item._id,
+//       productId: item.productId._id,
+//       name: item.productId.Name,
+//       price: item.productId.Price,
+//       quantity: item.quantity,
+//       Image: item.productId.Image
+//     }));
+
+//     const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+//     res.status(200).json({
+//       message: "Cart fetched successfully",
+//       cart: { items, totalPrice }
+//     });
+//   } catch (err) {
+//     console.error("Error getting cart:", err);
+//     res.status(500).json({ message: "Something went wrong", error: err.message });
+//   }
+// });
+
 export const getCart = asyncHandler(async (req, res) => {
   const userId = req.user?.id;
   const sessionId = req.sessionID;
@@ -661,10 +734,11 @@ export const getCart = asyncHandler(async (req, res) => {
     const query = userId ? { userId } : { sessionId };
     const cart = await Cart.findOne(query).populate("items.productId", "Name Price Image");
 
+    // لو الكارت مفيهوش حاجة
     if (!cart || cart.items.length === 0) {
       return res.status(200).json({
-        message: "Cart is empty",
-        cart: { items: [], totalPrice: 0 }, // كارت فاضي بدون أي default products
+        message: "Cart fetched successfully",
+        cart: { items: [], totalPrice: 0 }, // فاضي فعليًا
       });
     }
 
@@ -679,16 +753,17 @@ export const getCart = asyncHandler(async (req, res) => {
 
     const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-    return res.status(200).json({
-      message: userId ? "User cart fetched successfully" : "Guest cart fetched successfully",
-      cart: { items, totalPrice },
+    res.status(200).json({
+      message: "Cart fetched successfully",
+      cart: { items, totalPrice }
     });
-
   } catch (err) {
     console.error("Error getting cart:", err);
     res.status(500).json({ message: "Something went wrong", error: err.message });
   }
 });
+
+
 
 /**
  * @desc    Remove product from cart (User or Guest)
