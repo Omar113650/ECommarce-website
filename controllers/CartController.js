@@ -1130,38 +1130,110 @@ export const clearCart = asyncHandler(async (req, res) => {
 
 
 
-
-
-
-
+/**
+ * @desc    Get cart (User or Guest) - with fallback to 10 random products if empty
+ * @route   GET /api/cart
+ * @access  Public/User
+ */
 export const getCart = asyncHandler(async (req, res) => {
-  const userId = req.user?._id;
-  const sessionId = req.sessionID;
-  const query = userId ? { userId } : { sessionId };
+  const userId = req.user?._id; // تأكد إنك بتستخدم _id مش id
+  const sessionId = req.sessionID; // صح: req.sessionID
 
-  const cart = await Cart.findOne(query).populate(
-    "items.productId",
-    "Name Price Image stock available"
-  );
+  try {
+    let cart = null;
+    let source = "";
 
-  if (!cart || cart.items.length === 0) {
-    return res.json({ cart: { items: [], totalPrice: 0 } });
+    // 1. ابحث عن الكارت (مستخدم أو زائر)
+    if (userId) {
+      cart = await Cart.findOne({ userId }).populate(
+        "items.productId",
+        "Name Price Image stock available"
+      );
+      source = "user";
+    } else if (sessionId) {
+      cart = await Cart.findOne({ sessionId }).populate(
+        "items.productId",
+        "Name Price Image stock available"
+      );
+      source = "guest";
+    }
+
+    // 2. لو مفيش كارت أو فاضي → جيب 10 منتجات عشوائية
+    if (!cart || cart.items.length === 0) {
+      const randomProducts = await Product.aggregate([
+        { $match: { available: "InStock", stock: { $gt: 0 } } }, // فقط المتاح
+        { $sample: { size: 10 } },
+        {
+          $project: {
+            _id: 1,
+            Name: 1,
+            Price: 1,
+            Image: 1,
+          },
+        },
+      ]);
+
+      const items = randomProducts.map((p) => ({
+        id: p._id, // وهمي، لأنه مش عنصر حقيقي في الكارت
+        productId: p._id,
+        name: p.Name,
+        price: p.Price,
+        quantity: 1,
+        Image: p.Image,
+        isSuggested: true, // عشان الـ frontend يعرف إن دي اقتراحات
+      }));
+
+      const totalPrice = items.reduce(
+        (acc, item) => acc + item.price * item.quantity,
+        0
+      );
+
+      return res.status(200).json({
+        message: "Suggested products (cart is empty)",
+        source: "suggested",
+        cart: {
+          items,
+          totalPrice,
+          isEmpty: true,
+        },
+      });
+    }
+
+    // 3. لو فيه كارت → رجّع محتواه
+    const items = cart.items.map((item) => ({
+      id: item._id,
+      productId: item.productId._id,
+      name: item.productId.Name,
+      price: item.productId.Price,
+      quantity: item.quantity,
+      Image: item.productId.Image,
+      stock: item.productId.stock,
+      available: item.productId.available,
+    }));
+
+    const totalPrice = items.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    );
+
+    res.status(200).json({
+      message:
+        source === "user"
+          ? "User cart fetched successfully"
+          : "Guest cart fetched successfully",
+      source,
+      cart: {
+        _id: cart._id,
+        items,
+        totalPrice,
+        isEmpty: false,
+      },
+    });
+  } catch (err) {
+    console.error("Error in getCart:", err);
+    res.status(500).json({
+      message: "Failed to fetch cart",
+      error: err.message,
+    });
   }
-
-  const items = cart.items.map((i) => ({
-    id: i._id,
-    productId: i.productId._id,
-    name: i.productId.Name,
-    price: i.productId.Price,
-    image: i.productId.Image,
-    quantity: i.quantity,
-    stock: i.productId.stock,
-  }));
-
-  const totalPrice = items.reduce((a, i) => a + i.price * i.quantity, 0);
-
-  res.json({
-    message: userId ? "User cart" : "Guest cart",
-    cart: { items, totalPrice },
-  });
 });
