@@ -1399,25 +1399,21 @@ export const addToCart = asyncHandler(async (req, res) => {
 
 
 
-
-
-
-
-
-// @desc    Get user cart (or return 10 suggested products if empty)
-// @route   GET /api/v1/cart
-// @access  Private (User only)
 export const getCart = asyncHandler(async (req, res) => {
   const userId = req.user?.id;
 
   if (!userId) {
-    return res.status(401).json({ success: false, message: "User not authenticated" });
+    return res.status(401).json({
+      success: false,
+      message: "User not authenticated",
+    });
   }
 
-  const cart = await Cart.findOne({ userId })
+  // Get cart with products
+  let cart = await Cart.findOne({ userId })
     .populate("items.productId", "Name Price Image available stock");
 
-  // If empty cart → return suggestions
+  // If empty → suggestions
   if (!cart || cart.items.length === 0) {
     const suggested = await Product.aggregate([
       { $match: { available: "InStock", stock: { $gt: 0 } } },
@@ -1448,14 +1444,18 @@ export const getCart = asyncHandler(async (req, res) => {
     });
   }
 
-  // If cart has items
+  // 🔥 Fix: delete items that reference deleted products
+  cart.items = cart.items.filter((item) => item.productId !== null);
+  await cart.save();
+
+  // Format items
   const items = cart.items.map((item) => ({
     id: item._id,
-    productId: item.productId._id,
-    name: item.productId.Name,
-    price: item.productId.Price,
+    productId: item.productId?._id || null,
+    name: item.productId?.Name || "Unknown Product",
+    price: item.productId?.Price || 0,
     quantity: item.quantity,
-    Image: item.productId.Image,
+    Image: item.productId?.Image || null,
   }));
 
   const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
