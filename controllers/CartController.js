@@ -589,47 +589,85 @@ export const addToCart = asyncHandler(async (req, res) => {
 // });
 
 
+// export const getCart = asyncHandler(async (req, res) => {
+//   const userId = req.user?.id;
+//   const sessionId = req.sessionID;
+
+//   try {
+//     let cart;
+//     let source = "";
+
+//     if (userId) {
+//       cart = await Cart.findOne({ userId }).populate("items.productId", "Name Price Image");
+//       source = "user";
+//     } else if (sessionId) {
+//       cart = await Cart.findOne({ sessionId }).populate("items.productId", "Name Price Image");
+//       source = "guest";
+//     }
+
+//     // لو مفيش cart أو فاضي، نجيب 10 منتجات عشوائية
+//     if (!cart || cart.items.length === 0) {
+//       const products = await Product.aggregate([{ $sample: { size: 10 } }]);
+
+//       const items = products.map(p => ({
+//         id: p._id,
+//         productId: p._id,
+//         name: p.Name,
+//         price: p.Price,
+//         quantity: 1,
+//         Image: p.Image
+//       }));
+
+//       const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+//       return res.status(200).json({
+//         message: "Cart fetched successfully (default products)",
+//         cart: {
+//           items,
+//           totalPrice
+//         }
+//       });
+//     }
+
+//     // لو فيه cart موجود
+//     const items = cart.items.map(item => ({
+//       id: item._id,
+//       productId: item.productId._id,
+//       name: item.productId.Name,
+//       price: item.productId.Price,
+//       quantity: item.quantity,
+//       Image: item.productId.Image
+//     }));
+
+//     const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+//     return res.status(200).json({
+//       message: source === "user" ? "User cart fetched successfully" : "Guest cart fetched successfully",
+//       cart: { items, totalPrice }
+//     });
+
+//   } catch (err) {
+//     console.error("Error getting cart:", err);
+//     res.status(500).json({ message: "Something went wrong", error: err.message });
+//   }
+// });
+
+
 export const getCart = asyncHandler(async (req, res) => {
   const userId = req.user?.id;
   const sessionId = req.sessionID;
 
   try {
-    let cart;
-    let source = "";
+    const query = userId ? { userId } : { sessionId };
+    const cart = await Cart.findOne(query).populate("items.productId", "Name Price Image");
 
-    if (userId) {
-      cart = await Cart.findOne({ userId }).populate("items.productId", "Name Price Image");
-      source = "user";
-    } else if (sessionId) {
-      cart = await Cart.findOne({ sessionId }).populate("items.productId", "Name Price Image");
-      source = "guest";
-    }
-
-    // لو مفيش cart أو فاضي، نجيب 10 منتجات عشوائية
     if (!cart || cart.items.length === 0) {
-      const products = await Product.aggregate([{ $sample: { size: 10 } }]);
-
-      const items = products.map(p => ({
-        id: p._id,
-        productId: p._id,
-        name: p.Name,
-        price: p.Price,
-        quantity: 1,
-        Image: p.Image
-      }));
-
-      const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-
       return res.status(200).json({
-        message: "Cart fetched successfully (default products)",
-        cart: {
-          items,
-          totalPrice
-        }
+        message: "Cart is empty",
+        cart: { items: [], totalPrice: 0 }, // كارت فاضي بدون أي default products
       });
     }
 
-    // لو فيه cart موجود
     const items = cart.items.map(item => ({
       id: item._id,
       productId: item.productId._id,
@@ -642,8 +680,8 @@ export const getCart = asyncHandler(async (req, res) => {
     const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     return res.status(200).json({
-      message: source === "user" ? "User cart fetched successfully" : "Guest cart fetched successfully",
-      cart: { items, totalPrice }
+      message: userId ? "User cart fetched successfully" : "Guest cart fetched successfully",
+      cart: { items, totalPrice },
     });
 
   } catch (err) {
@@ -703,7 +741,7 @@ export const removeFromCart = asyncHandler(async (req, res) => {
  * @desc    Clear entire cart (User or Guest)
  * @route   DELETE /api/cart
  * @access  User/Guest
- */
+//  */
 export const clearCart = asyncHandler(async (req, res) => {
   const userId = req.user?.id;
   const sessionId = req.sessionID;
@@ -724,3 +762,4 @@ export const clearCart = asyncHandler(async (req, res) => {
     res.status(500).json({ message: "Failed to clear cart", error: err.message });
   }
 });
+
