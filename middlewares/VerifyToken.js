@@ -21,19 +21,23 @@ export const VerifyToken = asyncHandler(async (req, res, next) => {
   }
 });
 
-export const OptionalVerifyToken = asyncHandler(async (req, res, next) => {
-  const authToken = req.headers.authorization;
-  if (authToken && authToken.startsWith("Bearer ")) {
-    const token = authToken.split(" ")[1];
-    try {
-      const decodedPayload = JWT.verify(token, process.env.JWT_SECRET);
-      req.user = decodedPayload;
-    } catch (err) {
-      console.error("Invalid token:", err.message);
-    }
+export const protect = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "You are not logged in to access this token" });
   }
-  next();
-});
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = { id: decoded.id }; // أو _id
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+};
 
 export const VerifyTokenAdmin = asyncHandler(async (req, res, next) => {
   await VerifyToken(req, res, async () => {
