@@ -458,86 +458,86 @@ import mongoose from "mongoose";
  * @route   POST /api/cart
  * @access  Public/User
  */
-export const addToCart = asyncHandler(async (req, res) => {
-  const { productId, quantity } = req.body;
-  const userId = req.user?.id;
-  const sessionId = req.session.id;
+// export const addToCart = asyncHandler(async (req, res) => {
+//   const { productId, quantity } = req.body;
+//   const userId = req.user?.id;
+//   const sessionId = req.session.id;
 
-  if (!productId || !Number.isInteger(quantity) || quantity <= 0) {
-    return res.status(400).json({ message: "Invalid input" });
-  }
+//   if (!productId || !Number.isInteger(quantity) || quantity <= 0) {
+//     return res.status(400).json({ message: "Invalid input" });
+//   }
 
-  const product = await Product.findById(productId);
-  if (!product) return res.status(404).json({ message: "Product not found" });
+//   const product = await Product.findById(productId);
+//   if (!product) return res.status(404).json({ message: "Product not found" });
 
-  if (product.available === "OutOfStock" || product.stock < quantity) {
-    return res.status(400).json({ message: "Insufficient stock" });
-  }
+//   if (product.available === "OutOfStock" || product.stock < quantity) {
+//     return res.status(400).json({ message: "Insufficient stock" });
+//   }
 
-  const identifier = userId ? { userId } : { sessionId };
+//   const identifier = userId ? { userId } : { sessionId };
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
 
-  try {
-    let cart = await Cart.findOne(identifier).session(session);
+//   try {
+//     let cart = await Cart.findOne(identifier).session(session);
 
-    if (!cart) {
-      cart = await Cart.create(
-        [{ ...identifier, items: [{ productId, quantity }] }],
-        { session }
-      );
-      cart = cart[0];
-    } else {
-      const itemIndex = cart.items.findIndex(
-        (item) => item.productId.toString() === productId
-      );
+//     if (!cart) {
+//       cart = await Cart.create(
+//         [{ ...identifier, items: [{ productId, quantity }] }],
+//         { session }
+//       );
+//       cart = cart[0];
+//     } else {
+//       const itemIndex = cart.items.findIndex(
+//         (item) => item.productId.toString() === productId
+//       );
 
-      if (itemIndex > -1) {
-        const newQuantity = cart.items[itemIndex].quantity + quantity;
-        if (product.stock < newQuantity) {
-          await session.abortTransaction();
-          session.endSession();
-          return res.status(400).json({ message: "Insufficient stock" });
-        }
-        cart.items[itemIndex].quantity = newQuantity;
-      } else {
-        cart.items.push({ productId, quantity });
-      }
+//       if (itemIndex > -1) {
+//         const newQuantity = cart.items[itemIndex].quantity + quantity;
+//         if (product.stock < newQuantity) {
+//           await session.abortTransaction();
+//           session.endSession();
+//           return res.status(400).json({ message: "Insufficient stock" });
+//         }
+//         cart.items[itemIndex].quantity = newQuantity;
+//       } else {
+//         cart.items.push({ productId, quantity });
+//       }
 
-      await cart.save({ session });
-    }
+//       await cart.save({ session });
+//     }
 
-    product.stock -= quantity;
-    if (product.stock <= 0) product.available = "OutOfStock";
-    await product.save({ session });
+//     product.stock -= quantity;
+//     if (product.stock <= 0) product.available = "OutOfStock";
+//     await product.save({ session });
 
-    await session.commitTransaction();
-    session.endSession();
+//     await session.commitTransaction();
+//     session.endSession();
 
-    const populatedCart = await Cart.findById(cart._id).populate(
-      "items.productId",
-      "Name Price Image"
-    );
+//     const populatedCart = await Cart.findById(cart._id).populate(
+//       "items.productId",
+//       "Name Price Image"
+//     );
 
-    const totalPrice = populatedCart.items.reduce(
-      (acc, item) => acc + (item.productId?.Price || 0) * item.quantity,
-      0
-    );
+//     const totalPrice = populatedCart.items.reduce(
+//       (acc, item) => acc + (item.productId?.Price || 0) * item.quantity,
+//       0
+//     );
 
-    res.status(200).json({
-      message: userId
-        ? "Added to user cart successfully"
-        : "Added to guest cart successfully",
-      cart: { ...populatedCart.toObject(), totalPrice },
-    });
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    console.error("Error adding to cart:", err.message);
-    res.status(500).json({ message: "Something went wrong", error: err.message });
-  }
-});
+//     res.status(200).json({
+//       message: userId
+//         ? "Added to user cart successfully"
+//         : "Added to guest cart successfully",
+//       cart: { ...populatedCart.toObject(), totalPrice },
+//     });
+//   } catch (err) {
+//     await session.abortTransaction();
+//     session.endSession();
+//     console.error("Error adding to cart:", err.message);
+//     res.status(500).json({ message: "Something went wrong", error: err.message });
+//   }
+// });
 
 /**
  * @desc    Get cart for user or guest
@@ -770,116 +770,398 @@ export const addToCart = asyncHandler(async (req, res) => {
 
 
 
-/**
- * @desc    Remove product from cart (User or Guest)
- * @route   DELETE /api/cart/:id
- * @access  Public/User
- */
-export const removeFromCart = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user?.id;
-  const sessionId = req.sessionID;
+// /**
+//  * @desc    Remove product from cart (User or Guest)
+//  * @route   DELETE /api/cart/:id
+//  * @access  Public/User
+//  */
+// export const removeFromCart = asyncHandler(async (req, res) => {
+//   const { id } = req.params;
+//   const userId = req.user?.id;
+//   const sessionId = req.sessionID;
+
+//   try {
+//     const query = userId ? { userId } : { sessionId };
+//     const cart = await Cart.findOne(query).populate("items.productId", "Name Price Image");
+
+//     if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+//     const itemIndex = cart.items.findIndex((item) => item._id.toString() === id);
+//     if (itemIndex === -1) return res.status(404).json({ message: "Item not found in cart" });
+
+//     const deletedItem = cart.items[itemIndex];
+//     cart.items.splice(itemIndex, 1);
+
+//     cart.totalPrice = cart.items.reduce(
+//       (acc, item) => acc + (item.productId?.Price || 0) * item.quantity,
+//       0
+//     );
+
+//     await cart.save();
+
+//     res.status(200).json({
+//       message: "Item removed from cart successfully",
+//       deletedItem: {
+//         id: deletedItem._id,
+//         productId: deletedItem.productId?._id,
+//         name: deletedItem.productId?.Name,
+//         price: deletedItem.productId?.Price,
+//         quantity: deletedItem.quantity,
+//         Image: deletedItem.productId?.Image,
+//       },
+//       totalPrice: cart.totalPrice,
+//     });
+//   } catch (err) {
+//     console.error("Error removing from cart:", err);
+//     res.status(500).json({ message: "Failed to remove from cart", error: err.message });
+//   }
+// });
+
+// /**
+//  * @desc    Clear entire cart (User or Guest)
+//  * @route   DELETE /api/cart
+//  * @access  User/Guest
+// //  */
+
+// // مسح الكارت بالكامل
+// export const clearCart = asyncHandler(async (req, res) => {
+//   const userId = req.user?.id;
+//   const sessionId = req.sessionID;
+
+//   try {
+//     const query = userId ? { userId } : { sessionId };
+//     const cart = await Cart.findOne(query);
+
+//     if (!cart) {
+//       return res.status(404).json({ message: "Cart not found" });
+//     }
+
+//     cart.items = [];
+//     cart.totalPrice = 0;
+//     await cart.save();
+
+//     res.status(200).json({ message: "Cart cleared successfully" });
+//   } catch (err) {
+//     console.error("Error clearing cart:", err);
+//     res.status(500).json({ message: "Failed to clear cart", error: err.message });
+//   }
+// });
+
+// // جلب محتوى الكارت
+// export const getCart = asyncHandler(async (req, res) => {
+//   const userId = req.user?.id;
+//   const sessionId = req.sessionID;
+
+//   try {
+//     const query = userId ? { userId } : { sessionId };
+//     const cart = await Cart.findOne(query).populate("items.productId", "Name Price Image");
+
+//     if (!cart || cart.items.length === 0) {
+//       return res.status(200).json({
+//         message: "Cart is empty",
+//         cart: { items: [], totalPrice: 0 } // فاضي بدون أي default products
+//       });
+//     }
+
+//     const items = cart.items.map(item => ({
+//       id: item._id,
+//       productId: item.productId._id,
+//       name: item.productId.Name,
+//       price: item.productId.Price,
+//       quantity: item.quantity,
+//       Image: item.productId.Image
+//     }));
+
+//     const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+//     res.status(200).json({
+//       message: userId ? "User cart fetched successfully" : "Guest cart fetched successfully",
+//       cart: { items, totalPrice }
+//     });
+//   } catch (err) {
+//     console.error("Error getting cart:", err);
+//     res.status(500).json({ message: "Something went wrong", error: err.message });
+//   }
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const addToCart = asyncHandler(async (req, res) => {
+  const { productId, quantity } = req.body;
+  const userId = req.user?._id;
+  const sessionId = req.sessionID; // مش req.session.id
+
+  if (!productId || !quantity || quantity < 1) {
+    return res.status(400).json({ message: "Invalid input" });
+  }
+
+  const product = await Product.findById(productId);
+  if (!product) return res.status(404).json({ message: "Product not found" });
+  if (product.available === "OutOfStock" || product.stock < quantity) {
+    return res.status(400).json({ message: "Insufficient stock" });
+  }
+
+  const identifier = userId ? { userId } : { sessionId };
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
   try {
-    const query = userId ? { userId } : { sessionId };
-    const cart = await Cart.findOne(query).populate("items.productId", "Name Price Image");
+    let cart = await Cart.findOne(identifier).session(session);
 
-    if (!cart) return res.status(404).json({ message: "Cart not found" });
+    if (!cart) {
+      cart = new Cart({ ...identifier, items: [{ productId, quantity }] });
+    } else {
+      const itemIndex = cart.items.findIndex(
+        (item) => item.productId.toString() === productId
+      );
 
-    const itemIndex = cart.items.findIndex((item) => item._id.toString() === id);
-    if (itemIndex === -1) return res.status(404).json({ message: "Item not found in cart" });
+      if (itemIndex > -1) {
+        const newQty = cart.items[itemIndex].quantity + quantity;
+        if (product.stock < newQty) {
+          throw new Error("Insufficient stock");
+        }
+        cart.items[itemIndex].quantity = newQty;
+      } else {
+        cart.items.push({ productId, quantity });
+      }
+    }
 
-    const deletedItem = cart.items[itemIndex];
-    cart.items.splice(itemIndex, 1);
+    // حفظ الكارت أولاً
+    await cart.save({ session });
 
-    cart.totalPrice = cart.items.reduce(
-      (acc, item) => acc + (item.productId?.Price || 0) * item.quantity,
+    // تحديث المخزون
+    product.stock -= quantity;
+    if (product.stock === 0) product.available = "OutOfStock";
+    await product.save({ session });
+
+    await session.commitTransaction();
+
+    // Populate بعد الـ commit
+    const populatedCart = await Cart.findById(cart._id).populate(
+      "items.productId",
+      "Name Price Image stock available"
+    );
+
+    const totalPrice = populatedCart.items.reduce(
+      (acc, item) => acc + item.productId.Price * item.quantity,
       0
     );
 
-    await cart.save();
-
-    res.status(200).json({
-      message: "Item removed from cart successfully",
-      deletedItem: {
-        id: deletedItem._id,
-        productId: deletedItem.productId?._id,
-        name: deletedItem.productId?.Name,
-        price: deletedItem.productId?.Price,
-        quantity: deletedItem.quantity,
-        Image: deletedItem.productId?.Image,
+    res.json({
+      message: userId ? "Added to user cart" : "Added to guest cart",
+      cart: {
+        _id: populatedCart._id,
+        items: populatedCart.items.map((i) => ({
+          id: i._id,
+          productId: i.productId._id,
+          name: i.productId.Name,
+          price: i.productId.Price,
+          image: i.productId.Image,
+          quantity: i.quantity,
+        })),
+        totalPrice,
       },
-      totalPrice: cart.totalPrice,
     });
   } catch (err) {
-    console.error("Error removing from cart:", err);
-    res.status(500).json({ message: "Failed to remove from cart", error: err.message });
+    await session.abortTransaction();
+    if (err.message === "Insufficient stock") {
+      return res.status(400).json({ message: "Insufficient stock" });
+    }
+    res.status(500).json({ message: "Server error", error: err.message });
+  } finally {
+    session.endSession();
   }
 });
 
-/**
- * @desc    Clear entire cart (User or Guest)
- * @route   DELETE /api/cart
- * @access  User/Guest
-//  */
 
-// مسح الكارت بالكامل
-export const clearCart = asyncHandler(async (req, res) => {
-  const userId = req.user?.id;
+
+
+
+export const removeFromCart = asyncHandler(async (req, res) => {
+  const { id } = req.params; // item ID
+  const userId = req.user?._id;
   const sessionId = req.sessionID;
 
-  try {
-    const query = userId ? { userId } : { sessionId };
-    const cart = await Cart.findOne(query);
+  const query = userId ? { userId } : { sessionId };
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-    if (!cart) {
-      return res.status(404).json({ message: "Cart not found" });
+  try {
+    const cart = await Cart.findOne(query).session(session);
+    if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+    const itemIndex = cart.items.findIndex((i) => i._id.toString() === id);
+    if (itemIndex === -1) return res.status(404).json({ message: "Item not found" });
+
+    const item = cart.items[itemIndex];
+    cart.items.splice(itemIndex, 1);
+
+    // إرجاع الكمية للمنتج
+    const product = await Product.findById(item.productId).session(session);
+    if (product) {
+      product.stock += item.quantity;
+      if (product.stock > 0) product.available = "InStock";
+      await product.save({ session });
+    }
+
+    await cart.save({ session });
+    await session.commitTransaction();
+
+    const populated = await Cart.findById(cart._id).populate(
+      "items.productId",
+      "Name Price Image"
+    );
+
+    const totalPrice = populated.items.reduce(
+      (acc, i) => acc + i.productId.Price * i.quantity,
+      0
+    );
+
+    res.json({
+      message: "Item removed",
+      totalPrice,
+      removedItem: {
+        id: item._id,
+        productId: item.productId,
+        quantity: item.quantity,
+      },
+    });
+  } catch (err) {
+    await session.abortTransaction();
+    res.status(500).json({ message: "Failed to remove item" });
+  } finally {
+    session.endSession();
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const clearCart = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
+  const sessionId = req.sessionID;
+  const query = userId ? { userId } : { sessionId };
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const cart = await Cart.findOne(query).session(session);
+    if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+    // إرجاع كل الكميات
+    for (const item of cart.items) {
+      const product = await Product.findById(item.productId).session(session);
+      if (product) {
+        product.stock += item.quantity;
+        if (product.stock > 0) product.available = "InStock";
+        await product.save({ session });
+      }
     }
 
     cart.items = [];
-    cart.totalPrice = 0;
-    await cart.save();
+    await cart.save({ session });
+    await session.commitTransaction();
 
-    res.status(200).json({ message: "Cart cleared successfully" });
+    res.json({ message: "Cart cleared successfully" });
   } catch (err) {
-    console.error("Error clearing cart:", err);
-    res.status(500).json({ message: "Failed to clear cart", error: err.message });
+    await session.abortTransaction();
+    res.status(500).json({ message: "Failed to clear cart" });
+  } finally {
+    session.endSession();
   }
 });
 
-// جلب محتوى الكارت
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const getCart = asyncHandler(async (req, res) => {
-  const userId = req.user?.id;
+  const userId = req.user?._id;
   const sessionId = req.sessionID;
+  const query = userId ? { userId } : { sessionId };
 
-  try {
-    const query = userId ? { userId } : { sessionId };
-    const cart = await Cart.findOne(query).populate("items.productId", "Name Price Image");
+  const cart = await Cart.findOne(query).populate(
+    "items.productId",
+    "Name Price Image stock available"
+  );
 
-    if (!cart || cart.items.length === 0) {
-      return res.status(200).json({
-        message: "Cart is empty",
-        cart: { items: [], totalPrice: 0 } // فاضي بدون أي default products
-      });
-    }
-
-    const items = cart.items.map(item => ({
-      id: item._id,
-      productId: item.productId._id,
-      name: item.productId.Name,
-      price: item.productId.Price,
-      quantity: item.quantity,
-      Image: item.productId.Image
-    }));
-
-    const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-
-    res.status(200).json({
-      message: userId ? "User cart fetched successfully" : "Guest cart fetched successfully",
-      cart: { items, totalPrice }
-    });
-  } catch (err) {
-    console.error("Error getting cart:", err);
-    res.status(500).json({ message: "Something went wrong", error: err.message });
+  if (!cart || cart.items.length === 0) {
+    return res.json({ cart: { items: [], totalPrice: 0 } });
   }
+
+  const items = cart.items.map((i) => ({
+    id: i._id,
+    productId: i.productId._id,
+    name: i.productId.Name,
+    price: i.productId.Price,
+    image: i.productId.Image,
+    quantity: i.quantity,
+    stock: i.productId.stock,
+  }));
+
+  const totalPrice = items.reduce((a, i) => a + i.price * i.quantity, 0);
+
+  res.json({
+    message: userId ? "User cart" : "Guest cart",
+    cart: { items, totalPrice },
+  });
 });
