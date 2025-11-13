@@ -35,8 +35,10 @@ app.use(
       "https://e-commerce-website-eight.vercel.app",
       "http://localhost:3000",
     ],
+    credentials: true, // عشان الكوكيز تتبعت
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     
-    credentials: true,
   })
 );
 
