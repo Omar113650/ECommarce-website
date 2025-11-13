@@ -731,17 +731,20 @@ export const getCart = asyncHandler(async (req, res) => {
   const sessionId = req.sessionID;
 
   try {
+    // نحدد الكارت حسب user أو session
     const query = userId ? { userId } : { sessionId };
-    const cart = await Cart.findOne(query).populate("items.productId", "Name Price Image");
+    let cart = await Cart.findOne(query).populate("items.productId", "Name Price Image");
 
-    // لو الكارت مفيهوش حاجة
-    if (!cart || cart.items.length === 0) {
-      return res.status(200).json({
-        message: "Cart fetched successfully",
-        cart: { items: [], totalPrice: 0 }, // فاضي فعليًا
+    // لو مفيش cart نعمل واحد فاضي مباشرة
+    if (!cart) {
+      cart = await Cart.create({
+        ...(userId ? { userId } : { sessionId }),
+        items: [],
+        totalPrice: 0,
       });
     }
 
+    // نجهز البيانات للرد
     const items = cart.items.map(item => ({
       id: item._id,
       productId: item.productId._id,
@@ -757,11 +760,13 @@ export const getCart = asyncHandler(async (req, res) => {
       message: "Cart fetched successfully",
       cart: { items, totalPrice }
     });
+
   } catch (err) {
     console.error("Error getting cart:", err);
     res.status(500).json({ message: "Something went wrong", error: err.message });
   }
 });
+
 
 
 
