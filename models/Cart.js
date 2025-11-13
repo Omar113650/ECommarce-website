@@ -83,12 +83,6 @@
 
 
 
-
-
-
-
-
-
 // models/Cart.js
 import mongoose from "mongoose";
 
@@ -97,13 +91,8 @@ const CartSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: false,
-    },
-    cartId: {
-      type: String,
-      required: false,
+      required: true,
       unique: true,
-      sparse: true, // عشان يسمح بـ null للمستخدمين
     },
     items: [
       {
