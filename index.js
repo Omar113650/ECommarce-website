@@ -63,15 +63,20 @@ app.use(
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: process.env.NODE_ENV === "production", // https
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
-  }
-}));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
+    cookie: {
+      httpOnly: true,
+      secure: true,        // مهم: Vercel = HTTPS
+      sameSite: "none",    // مهم: عشان الكوكي يتبعت من دومين تاني
+      maxAge: 24 * 60 * 60 * 1000,
+    },
+  })
+);
 
 app.use(express.json());
 
