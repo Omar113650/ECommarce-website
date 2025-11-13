@@ -81,7 +81,7 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   // const skip = (Number(page) - 1) * Number(limit);
 
   const products = await Product.find(query)
-    .populate("categoryId", "Name")
+    .populate("categoryId", "name")
     .populate("Brand", "Name")
     .sort({ createdAt: -1 })
     // .skip(skip)
