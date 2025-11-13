@@ -25,7 +25,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(express.static(path.join(__dirname, "public")));
-app.use(session({ secret: "SECRET", resave: false, saveUninitialized: true }));
+// app.use(session({ secret: "SECRET", resave: false, saveUninitialized: true }));
 app.use(helmet());
 app.use(hpp());
 app.use(
@@ -59,6 +59,15 @@ app.use(
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: process.env.NODE_ENV === "production", // https
+    maxAge: 1000 * 60 * 60 * 24 // 1 day
+  }
+}));
 
 app.use(express.json());
 
