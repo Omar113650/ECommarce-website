@@ -238,68 +238,142 @@ export const getCart = asyncHandler(async (req, res) => {
 // @desc    Remove product from cart (User or Guest)
 // @route   DELETE /api/cart/:id
 // @access  Public/User
+// export const removeFromCart = asyncHandler(async (req, res) => {
+//   const { id } = req.params; // itemId
+//   const userId = req.user?.id;
+//   const sessionId = req.sessionID;
+
+//   try {
+//     if (userId) {
+//       const cart = await Cart.findOne({ userId });
+//       if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+//       const itemIndex = cart.items.findIndex((i) => i._id.toString() === id);
+//       if (itemIndex === -1)
+//         return res.status(404).json({ message: "Item not found in cart" });
+
+//       const deletedItem = cart.items[itemIndex];
+//       cart.items.splice(itemIndex, 1);
+
+//       cart.totalPrice = cart.items.reduce(
+//         (acc, item) => acc + item.productId.Price * item.quantity,
+//         0
+//       );
+
+//       await cart.save();
+
+//       return res.status(200).json({
+//         message: "Item removed from cart successfully",
+//         deletedItem,
+//         totalPrice: cart.totalPrice,
+//       });
+//     }
+
+//     const guestCart = await Cart.findOne({ sessionId }).populate(
+//       "items.productId",
+//       "Price"
+//     );
+//     if (!guestCart)
+//       return res.status(404).json({ message: "Guest cart not found" });
+
+//     const itemIndex = guestCart.items.findIndex((i) => i._id.toString() === id);
+//     if (itemIndex === -1)
+//       return res.status(404).json({ message: "Item not found in guest cart" });
+
+//     const deletedItem = guestCart.items[itemIndex];
+//     guestCart.items.splice(itemIndex, 1);
+
+//     guestCart.totalPrice = guestCart.items.reduce(
+//       (acc, item) => acc + item.productId.Price * item.quantity,
+//       0
+//     );
+
+//     await guestCart.save();
+
+//     res.status(200).json({
+//       message: "Item removed from guest cart successfully",
+//       deletedItem,
+//       totalPrice: guestCart.totalPrice,
+//     });
+//   } catch (err) {
+//     console.error("Error removing from cart:", err);
+//     res.status(500).json({ message: "Failed to remove from cart" });
+//   }
+// });
+
+// @desc    Remove product from cart (User or Guest)
+// @route   DELETE /api/cart/:id
+// @access  Public/User
 export const removeFromCart = asyncHandler(async (req, res) => {
   const { id } = req.params; // itemId
   const userId = req.user?.id;
   const sessionId = req.sessionID;
 
   try {
-    if (userId) {
-      const cart = await Cart.findOne({ userId });
-      if (!cart) return res.status(404).json({ message: "Cart not found" });
+    // تحديد الكارت حسب user أو guest
+    const query = userId ? { userId } : { sessionId };
+    const cart = await Cart.findOne(query).populate("items.productId", "Price Name Image");
 
-      const itemIndex = cart.items.findIndex((i) => i._id.toString() === id);
-      if (itemIndex === -1)
-        return res.status(404).json({ message: "Item not found in cart" });
-
-      const deletedItem = cart.items[itemIndex];
-      cart.items.splice(itemIndex, 1);
-
-      cart.totalPrice = cart.items.reduce(
-        (acc, item) => acc + item.productId.Price * item.quantity,
-        0
-      );
-
-      await cart.save();
-
-      return res.status(200).json({
-        message: "Item removed from cart successfully",
-        deletedItem,
-        totalPrice: cart.totalPrice,
+    if (!cart) {
+      return res.status(404).json({
+        message: userId ? "User cart not found" : "Guest cart not found",
       });
     }
 
-    const guestCart = await Cart.findOne({ sessionId }).populate(
-      "items.productId",
-      "Price"
-    );
-    if (!guestCart)
-      return res.status(404).json({ message: "Guest cart not found" });
+    // إيجاد العنصر اللي عايزين نحذفه
+    const itemIndex = cart.items.findIndex((item) => item._id.toString() === id);
 
-    const itemIndex = guestCart.items.findIndex((i) => i._id.toString() === id);
-    if (itemIndex === -1)
-      return res.status(404).json({ message: "Item not found in guest cart" });
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Item not found in cart" });
+    }
 
-    const deletedItem = guestCart.items[itemIndex];
-    guestCart.items.splice(itemIndex, 1);
+    // حفظ العنصر اللي هيتشال
+    const deletedItem = cart.items[itemIndex];
 
-    guestCart.totalPrice = guestCart.items.reduce(
-      (acc, item) => acc + item.productId.Price * item.quantity,
-      0
-    );
+    // حذف العنصر من المصفوفة
+    cart.items.splice(itemIndex, 1);
 
-    await guestCart.save();
+    // حساب السعر الكلي بعد الحذف
+    cart.totalPrice = cart.items.reduce((acc, item) => {
+      const price = item.productId?.Price || 0;
+      const quantity = item.quantity || 1;
+      return acc + price * quantity;
+    }, 0);
 
-    res.status(200).json({
-      message: "Item removed from guest cart successfully",
-      deletedItem,
-      totalPrice: guestCart.totalPrice,
+    await cart.save();
+
+    // تجهيز باقي العناصر للرد
+    const items = cart.items.map((item) => ({
+      id: item._id,
+      productId: item.productId?._id,
+      name: item.productId?.Name || "Deleted Product",
+      price: item.productId?.Price || 0,
+      quantity: item.quantity,
+      Image: item.productId?.Image || null,
+    }));
+
+    return res.status(200).json({
+      message: "Item removed from cart successfully",
+      deletedItem: {
+        id: deletedItem._id,
+        productId: deletedItem.productId?._id,
+        quantity: deletedItem.quantity,
+      },
+      cart: {
+        items,
+        totalPrice: cart.totalPrice,
+      },
     });
   } catch (err) {
     console.error("Error removing from cart:", err);
-    res.status(500).json({ message: "Failed to remove from cart" });
+    res.status(500).json({
+      message: "Failed to remove item from cart",
+      error: err.message,
+    });
   }
 });
+
+
 
 // @desc   Clear entire cart
 // @route  DELETE /api/cart/:userId
