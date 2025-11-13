@@ -21,23 +21,34 @@ export const VerifyToken = asyncHandler(async (req, res, next) => {
   }
 });
 
-export const protect = (req, res, next) => {
+export const VerifyToken1 = asyncHandler(async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "You are not logged in to access this token" });
+    return res.status(401).json({
+      message: "You are not logged in to access this token",
+    });
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = { id: decoded.id }; // أو _id
+
+    // مهم: req.user.id = decoded.id (مش _id)
+    req.user = {
+      id: decoded.id,   // نفس اللي في الـ token
+      role: decoded.role,
+    };
+
     next();
   } catch (err) {
-    return res.status(401).json({ message: "Invalid or expired token" });
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token has expired" });
+    }
+    return res.status(401).json({ message: "Invalid token" });
   }
-};
+});
 
 export const VerifyTokenAdmin = asyncHandler(async (req, res, next) => {
   await VerifyToken(req, res, async () => {
