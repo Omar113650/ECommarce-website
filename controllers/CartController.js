@@ -917,11 +917,9 @@ import mongoose from "mongoose";
 
 
 
-
 export const addToCart = asyncHandler(async (req, res) => {
-  const { productId, quantity } = req.body;
+  const { productId, quantity, cartId: clientCartId } = req.body;
   const userId = req.user?._id;
-  const sessionId = req.sessionID; // مش req.session.id
 
   if (!productId || !quantity || quantity < 1) {
     return res.status(400).json({ message: "Invalid input" });
@@ -933,15 +931,24 @@ export const addToCart = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Insufficient stock" });
   }
 
-  const identifier = userId ? { userId } : { sessionId };
+  const identifier = userId ? { userId } : { cartId: clientCartId };
+  if (!userId && !clientCartId) {
+    return res.status(400).json({ message: "cartId is required for guests" });
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
     let cart = await Cart.findOne(identifier).session(session);
 
+    // لو مفيش كارت، نعمل واحد جديد
     if (!cart) {
-      cart = new Cart({ ...identifier, items: [{ productId, quantity }] });
+      const newCartId = userId ? null : clientCartId;
+      cart = new Cart({
+        ...(userId ? { userId } : { cartId: newCartId }),
+        items: [{ productId, quantity }],
+      });
     } else {
       const itemIndex = cart.items.findIndex(
         (item) => item.productId.toString() === productId
@@ -949,16 +956,13 @@ export const addToCart = asyncHandler(async (req, res) => {
 
       if (itemIndex > -1) {
         const newQty = cart.items[itemIndex].quantity + quantity;
-        if (product.stock < newQty) {
-          throw new Error("Insufficient stock");
-        }
+        if (product.stock < newQty) throw new Error("Insufficient stock");
         cart.items[itemIndex].quantity = newQty;
       } else {
         cart.items.push({ productId, quantity });
       }
     }
 
-    // حفظ الكارت أولاً
     await cart.save({ session });
 
     // تحديث المخزون
@@ -968,22 +972,22 @@ export const addToCart = asyncHandler(async (req, res) => {
 
     await session.commitTransaction();
 
-    // Populate بعد الـ commit
-    const populatedCart = await Cart.findById(cart._id).populate(
+    const populated = await Cart.findById(cart._id).populate(
       "items.productId",
       "Name Price Image stock available"
     );
 
-    const totalPrice = populatedCart.items.reduce(
-      (acc, item) => acc + item.productId.Price * item.quantity,
+    const totalPrice = populated.items.reduce(
+      (acc, i) => acc + i.productId.Price * i.quantity,
       0
     );
 
     res.json({
       message: userId ? "Added to user cart" : "Added to guest cart",
+      cartId: cart.cartId || cart._id.toString(),
       cart: {
-        _id: populatedCart._id,
-        items: populatedCart.items.map((i) => ({
+        _id: cart._id,
+        items: populated.items.map((i) => ({
           id: i._id,
           productId: i.productId._id,
           name: i.productId.Name,
@@ -999,7 +1003,7 @@ export const addToCart = asyncHandler(async (req, res) => {
     if (err.message === "Insufficient stock") {
       return res.status(400).json({ message: "Insufficient stock" });
     }
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: "Server error" });
   } finally {
     session.endSession();
   }
@@ -1008,18 +1012,21 @@ export const addToCart = asyncHandler(async (req, res) => {
 
 
 
-
 export const removeFromCart = asyncHandler(async (req, res) => {
-  const { id } = req.params; // item ID
+  const { id } = req.params; // item _id
+  const { cartId: clientCartId } = req.body;
   const userId = req.user?._id;
-  const sessionId = req.sessionID;
 
-  const query = userId ? { userId } : { sessionId };
+  const identifier = userId ? { userId } : { cartId: clientCartId };
+  if (!userId && !clientCartId) {
+    return res.status(400).json({ message: "cartId required for guests" });
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const cart = await Cart.findOne(query).session(session);
+    const cart = await Cart.findOne(identifier).session(session);
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
     const itemIndex = cart.items.findIndex((i) => i._id.toString() === id);
@@ -1028,7 +1035,7 @@ export const removeFromCart = asyncHandler(async (req, res) => {
     const item = cart.items[itemIndex];
     cart.items.splice(itemIndex, 1);
 
-    // إرجاع الكمية للمنتج
+    // إرجاع المخزون
     const product = await Product.findById(item.productId).session(session);
     if (product) {
       product.stock += item.quantity;
@@ -1051,12 +1058,8 @@ export const removeFromCart = asyncHandler(async (req, res) => {
 
     res.json({
       message: "Item removed",
+      cartId: cart.cartId || cart._id.toString(),
       totalPrice,
-      removedItem: {
-        id: item._id,
-        productId: item.productId,
-        quantity: item.quantity,
-      },
     });
   } catch (err) {
     await session.abortTransaction();
@@ -1079,23 +1082,22 @@ export const removeFromCart = asyncHandler(async (req, res) => {
 
 
 
-
-
-
-
 export const clearCart = asyncHandler(async (req, res) => {
+  const { cartId: clientCartId } = req.body;
   const userId = req.user?._id;
-  const sessionId = req.sessionID;
-  const query = userId ? { userId } : { sessionId };
+
+  const identifier = userId ? { userId } : { cartId: clientCartId };
+  if (!userId && !clientCartId) {
+    return res.status(400).json({ message: "cartId required for guests" });
+  }
 
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const cart = await Cart.findOne(query).session(session);
+    const cart = await Cart.findOne(identifier).session(session);
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
-    // إرجاع كل الكميات
     for (const item of cart.items) {
       const product = await Product.findById(item.productId).session(session);
       if (product) {
@@ -1109,7 +1111,7 @@ export const clearCart = asyncHandler(async (req, res) => {
     await cart.save({ session });
     await session.commitTransaction();
 
-    res.json({ message: "Cart cleared successfully" });
+    res.json({ message: "Cart cleared", cartId: cart.cartId || cart._id.toString() });
   } catch (err) {
     await session.abortTransaction();
     res.status(500).json({ message: "Failed to clear cart" });
@@ -1127,113 +1129,79 @@ export const clearCart = asyncHandler(async (req, res) => {
 
 
 
-
-
-
 /**
  * @desc    Get cart (User or Guest) - with fallback to 10 random products if empty
  * @route   GET /api/cart
  * @access  Public/User
  */
 export const getCart = asyncHandler(async (req, res) => {
-  const userId = req.user?._id; // تأكد إنك بتستخدم _id مش id
-  const sessionId = req.sessionID; // صح: req.sessionID
+  const userId = req.user?._id;
+  const { cartId: clientCartId } = req.query; // من query
+
+  const identifier = userId ? { userId } : { cartId: clientCartId };
 
   try {
     let cart = null;
     let source = "";
 
-    // 1. ابحث عن الكارت (مستخدم أو زائر)
     if (userId) {
       cart = await Cart.findOne({ userId }).populate(
         "items.productId",
         "Name Price Image stock available"
       );
       source = "user";
-    } else if (sessionId) {
-      cart = await Cart.findOne({ sessionId }).populate(
+    } else if (clientCartId) {
+      cart = await Cart.findOne({ cartId: clientCartId }).populate(
         "items.productId",
         "Name Price Image stock available"
       );
       source = "guest";
     }
 
-    // 2. لو مفيش كارت أو فاضي → جيب 10 منتجات عشوائية
     if (!cart || cart.items.length === 0) {
       const randomProducts = await Product.aggregate([
-        { $match: { available: "InStock", stock: { $gt: 0 } } }, // فقط المتاح
+        { $match: { available: "InStock", stock: { $gt: 0 } } },
         { $sample: { size: 10 } },
-        {
-          $project: {
-            _id: 1,
-            Name: 1,
-            Price: 1,
-            Image: 1,
-          },
-        },
+        { $project: { _id: 1, Name: 1, Price: 1, Image: 1 } },
       ]);
 
       const items = randomProducts.map((p) => ({
-        id: p._id, // وهمي، لأنه مش عنصر حقيقي في الكارت
+        id: p._id,
         productId: p._id,
         name: p.Name,
         price: p.Price,
         quantity: 1,
         Image: p.Image,
-        isSuggested: true, // عشان الـ frontend يعرف إن دي اقتراحات
+        isSuggested: true,
       }));
 
-      const totalPrice = items.reduce(
-        (acc, item) => acc + item.price * item.quantity,
-        0
-      );
+      const totalPrice = items.reduce((a, i) => a + i.price, 0);
 
-      return res.status(200).json({
-        message: "Suggested products (cart is empty)",
+      return res.json({
+        message: "Suggested products",
         source: "suggested",
-        cart: {
-          items,
-          totalPrice,
-          isEmpty: true,
-        },
+        cart: { items, totalPrice, isEmpty: true },
       });
     }
 
-    // 3. لو فيه كارت → رجّع محتواه
-    const items = cart.items.map((item) => ({
-      id: item._id,
-      productId: item.productId._id,
-      name: item.productId.Name,
-      price: item.productId.Price,
-      quantity: item.quantity,
-      Image: item.productId.Image,
-      stock: item.productId.stock,
-      available: item.productId.available,
+    const items = cart.items.map((i) => ({
+      id: i._id,
+      productId: i.productId._id,
+      name: i.productId.Name,
+      price: i.productId.Price,
+      quantity: i.quantity,
+      Image: i.productId.Image,
     }));
 
-    const totalPrice = items.reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0
-    );
+    const totalPrice = items.reduce((a, i) => a + i.price * i.quantity, 0);
 
-    res.status(200).json({
-      message:
-        source === "user"
-          ? "User cart fetched successfully"
-          : "Guest cart fetched successfully",
+    res.json({
+      message: source === "user" ? "User cart" : "Guest cart",
       source,
-      cart: {
-        _id: cart._id,
-        items,
-        totalPrice,
-        isEmpty: false,
-      },
+      cartId: cart.cartId || cart._id.toString(),
+      cart: { _id: cart._id, items, totalPrice, isEmpty: false },
     });
   } catch (err) {
-    console.error("Error in getCart:", err);
-    res.status(500).json({
-      message: "Failed to fetch cart",
-      error: err.message,
-    });
+    res.status(500).json({ message: "Failed to fetch cart" });
   }
 });
