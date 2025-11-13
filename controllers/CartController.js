@@ -994,150 +994,126 @@ import mongoose from "mongoose";
 // });
 
 
-export const addToCart = asyncHandler(async (req, res) => {
-  const userId = req.user?.id;
-  const { productId, quantity } = req.body;
+// export const addToCart = asyncHandler(async (req, res) => {
+//   const userId = req.user?.id;
+//   const { productId, quantity } = req.body;
 
-  if (!userId) {
-    return res.status(401).json({ message: "User not authenticated" });
-  }
+//   if (!userId) {
+//     return res.status(401).json({ message: "User not authenticated" });
+//   }
 
-  if (!productId || !Number.isInteger(quantity) || quantity <= 0) {
-    return res.status(400).json({ message: "Invalid input" });
-  }
+//   if (!productId || !Number.isInteger(quantity) || quantity <= 0) {
+//     return res.status(400).json({ message: "Invalid input" });
+//   }
 
-  const product = await Product.findById(productId);
-  if (!product) return res.status(404).json({ message: "Product not found" });
+//   const product = await Product.findById(productId);
+//   if (!product) return res.status(404).json({ message: "Product not found" });
 
-  if (product.available === "OutOfStock" || product.stock < quantity) {
-    return res.status(400).json({ message: "Insufficient stock" });
-  }
+//   if (product.available === "OutOfStock" || product.stock < quantity) {
+//     return res.status(400).json({ message: "Insufficient stock" });
+//   }
 
-  try {
-    let cart = await Cart.findOne({ userId });
+//   try {
+//     let cart = await Cart.findOne({ userId });
 
-    if (!cart) {
-      cart = await Cart.create({
-        userId,
-        items: [{ productId, quantity }],
-      });
-    } else {
-      const itemIndex = cart.items.findIndex(
-        (item) => item.productId.toString() === productId
-      );
+//     if (!cart) {
+//       cart = await Cart.create({
+//         userId,
+//         items: [{ productId, quantity }],
+//       });
+//     } else {
+//       const itemIndex = cart.items.findIndex(
+//         (item) => item.productId.toString() === productId
+//       );
 
-      if (itemIndex > -1) {
-        const newQuantity = cart.items[itemIndex].quantity + quantity;
-        if (product.stock < newQuantity) {
-          return res.status(400).json({ message: "Insufficient stock" });
-        }
-        cart.items[itemIndex].quantity = newQuantity;
-      } else {
-        cart.items.push({ productId, quantity });
-      }
+//       if (itemIndex > -1) {
+//         const newQuantity = cart.items[itemIndex].quantity + quantity;
+//         if (product.stock < newQuantity) {
+//           return res.status(400).json({ message: "Insufficient stock" });
+//         }
+//         cart.items[itemIndex].quantity = newQuantity;
+//       } else {
+//         cart.items.push({ productId, quantity });
+//       }
 
-      await cart.save();
-    }
+//       await cart.save();
+//     }
 
-    // تحديث المخزون
-    product.stock -= quantity;
-    if (product.stock <= 0) product.available = "OutOfStock";
-    await product.save();
+//     // تحديث المخزون
+//     product.stock -= quantity;
+//     if (product.stock <= 0) product.available = "OutOfStock";
+//     await product.save();
 
-    // جلب الكارت بعد الـ populate
-    const populatedCart = await Cart.findById(cart._id).populate(
-      "items.productId",
-      "Name Price Image"
-    );
+//     // جلب الكارت بعد الـ populate
+//     const populatedCart = await Cart.findById(cart._id).populate(
+//       "items.productId",
+//       "Name Price Image"
+//     );
 
-    const totalPrice = populatedCart.items.reduce(
-      (acc, item) => acc + item.productId.Price * item.quantity,
-      0
-    );
+//     const totalPrice = populatedCart.items.reduce(
+//       (acc, item) => acc + item.productId.Price * item.quantity,
+//       0
+//     );
 
-    res.status(200).json({
-      message: "Added to cart successfully",
-      cart: {
-        items: populatedCart.items.map((item) => ({
-          id: item._id,
-          productId: item.productId._id,
-          name: item.productId.Name,
-          price: item.productId.Price,
-          quantity: item.quantity,
-          Image: item.productId.Image,
-        })),
-        totalPrice,
-      },
-    });
-  } catch (err) {
-    console.error("Error adding to cart:", err.message);
-    res.status(500).json({ message: "Something went wrong", error: err.message });
-  }
-});
+//     res.status(200).json({
+//       message: "Added to cart successfully",
+//       cart: {
+//         items: populatedCart.items.map((item) => ({
+//           id: item._id,
+//           productId: item.productId._id,
+//           name: item.productId.Name,
+//           price: item.productId.Price,
+//           quantity: item.quantity,
+//           Image: item.productId.Image,
+//         })),
+//         totalPrice,
+//       },
+//     });
+//   } catch (err) {
+//     console.error("Error adding to cart:", err.message);
+//     res.status(500).json({ message: "Something went wrong", error: err.message });
+//   }
+// });
 
 /**
  * @desc    Get user cart with fallback to 10 random products if empty
  * @route   GET /api/cart
  * @access  Private (User only)
  */
-/**
- * @desc    Get user cart - returns real cart or 10 suggested products if empty
- * @route   GET /api/cart
- * @access  Private (User only)
- */
+
+
+
 // export const getCart = asyncHandler(async (req, res) => {
 //   const userId = req.user?.id;
 
+//   // User must be logged in
 //   if (!userId) {
-//     return res.status(401).json({ message: "User not authenticated" });
+//     return res.status(401).json({
+//       message: "User not authenticated",
+//       success: false,
+//     });
 //   }
 
-//   try {
-//     const cart = await Cart.findOne({ userId }).populate(
-//       "items.productId",
-//       "Name Price Image"
-//     );
+//   // Fetch cart
+//   const cart = await Cart.findOne({ userId })
+//     .populate("items.productId", "Name Price Image available stock");
 
-//     // لو الكارت فاضي أو مش موجود
-//     if (!cart || cart.items.length === 0) {
-//       const randomProducts = await Product.aggregate([
-//         { $match: { available: "InStock", stock: { $gt: 0 } } },
-//         { $sample: { size: 10 } },
-//         { $project: { _id: 1, Name: 1, Price: 1, Image: 1 } },
-//       ]);
+//   // If no cart OR empty
+//   if (!cart || cart.items.length === 0) {
+//     const suggested = await Product.aggregate([
+//       { $match: { available: "InStock", stock: { $gt: 0 } } },
+//       { $sample: { size: 10 } },
+//       { $project: { _id: 1, Name: 1, Price: 1, Image: 1 } },
+//     ]);
 
-//       const items = randomProducts.map((p) => ({
-//         id: p._id,
-//         productId: p._id,
-//         name: p.Name,
-//         price: p.Price,
-//         quantity: 1,
-//         Image: p.Image,
-//         isSuggested: true,
-//       }));
-
-//       const totalPrice = items.reduce(
-//         (acc, item) => acc + item.price * item.quantity,
-//         0
-//       );
-
-//       return res.status(200).json({
-//         message: "Suggested products (your cart is empty)",
-//         cart: {
-//           items,
-//           totalPrice,
-//         },
-//       });
-//     }
-
-//     // لو فيه كارت
-//     const items = cart.items.map((item) => ({
-//       id: item._id,
-//       productId: item.productId._id,
-//       name: item.productId.Name,
-//       price: item.productId.Price,
-//       quantity: item.quantity,
-//       Image: item.productId.Image,
+//     const items = suggested.map((p) => ({
+//       id: p._id,
+//       productId: p._id,
+//       name: p.Name,
+//       price: p.Price,
+//       quantity: 1,
+//       Image: p.Image,
+//       isSuggested: true,
 //     }));
 
 //     const totalPrice = items.reduce(
@@ -1145,95 +1121,42 @@ export const addToCart = asyncHandler(async (req, res) => {
 //       0
 //     );
 
-//     res.status(200).json({
-//       message: "Cart fetched successfully",
+//     return res.status(200).json({
+//       message: "Cart is empty — showing suggested products",
+//       success: true,
 //       cart: {
 //         items,
 //         totalPrice,
+//         count: items.length,
 //       },
 //     });
-//   } catch (err) {
-//     console.error("Error getting cart:", err.message);
-//     res.status(500).json({ message: "Something went wrong", error: err.message });
 //   }
-// });;
 
+//   // If cart has items
+//   const items = cart.items.map((item) => ({
+//     id: item._id,
+//     productId: item.productId._id,
+//     name: item.productId.Name,
+//     price: item.productId.Price,
+//     quantity: item.quantity,
+//     Image: item.productId.Image,
+//   }));
 
+//   const totalPrice = items.reduce(
+//     (acc, item) => acc + item.price * item.quantity,
+//     0
+//   );
 
-export const getCart = asyncHandler(async (req, res) => {
-  const userId = req.user?.id;
-
-  // User must be logged in
-  if (!userId) {
-    return res.status(401).json({
-      message: "User not authenticated",
-      success: false,
-    });
-  }
-
-  // Fetch cart
-  const cart = await Cart.findOne({ userId })
-    .populate("items.productId", "Name Price Image available stock");
-
-  // If no cart OR empty
-  if (!cart || cart.items.length === 0) {
-    const suggested = await Product.aggregate([
-      { $match: { available: "InStock", stock: { $gt: 0 } } },
-      { $sample: { size: 10 } },
-      { $project: { _id: 1, Name: 1, Price: 1, Image: 1 } },
-    ]);
-
-    const items = suggested.map((p) => ({
-      id: p._id,
-      productId: p._id,
-      name: p.Name,
-      price: p.Price,
-      quantity: 1,
-      Image: p.Image,
-      isSuggested: true,
-    }));
-
-    const totalPrice = items.reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0
-    );
-
-    return res.status(200).json({
-      message: "Cart is empty — showing suggested products",
-      success: true,
-      cart: {
-        items,
-        totalPrice,
-        count: items.length,
-      },
-    });
-  }
-
-  // If cart has items
-  const items = cart.items.map((item) => ({
-    id: item._id,
-    productId: item.productId._id,
-    name: item.productId.Name,
-    price: item.productId.Price,
-    quantity: item.quantity,
-    Image: item.productId.Image,
-  }));
-
-  const totalPrice = items.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
-
-  return res.status(200).json({
-    message: "Cart fetched successfully",
-    success: true,
-    cart: {
-      items,
-      totalPrice,
-      count: items.length,
-    },
-  });
-});
+//   return res.status(200).json({
+//     message: "Cart fetched successfully",
+//     success: true,
+//     cart: {
+//       items,
+//       totalPrice,
+//       count: items.length,
+//     },
+//   });
+// });
 
 /**
  * @desc    Remove item from user cart
@@ -1349,3 +1272,201 @@ export const clearCart = asyncHandler(async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// @desc    Add product to user cart
+// @route   POST /api/v1/cart/add
+// @access  Private (User only)
+export const addToCart = asyncHandler(async (req, res) => {
+  const userId = req.user?.id;
+  const { productId, quantity } = req.body;
+
+  // Validate user
+  if (!userId) {
+    return res.status(401).json({ message: "User not authenticated" });
+  }
+
+  // Validate input
+  if (!productId || !Number.isInteger(quantity) || quantity <= 0) {
+    return res.status(400).json({ message: "Invalid input" });
+  }
+
+  // Validate product
+  const product = await Product.findById(productId);
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  if (product.available === "OutOfStock" || product.stock < quantity) {
+    return res.status(400).json({ message: "Insufficient stock" });
+  }
+
+  // Handle cart
+  let cart = await Cart.findOne({ userId });
+
+  if (!cart) {
+    // Create new cart
+    cart = await Cart.create({
+      userId,
+      items: [{ productId, quantity }],
+    });
+  } else {
+    // Check if product exists in cart
+    const index = cart.items.findIndex(
+      (item) => item.productId.toString() === productId
+    );
+
+    if (index > -1) {
+      const newQuantity = cart.items[index].quantity + quantity;
+
+      if (product.stock < newQuantity) {
+        return res.status(400).json({ message: "Insufficient stock" });
+      }
+
+      cart.items[index].quantity = newQuantity;
+    } else {
+      cart.items.push({ productId, quantity });
+    }
+
+    await cart.save();
+  }
+
+  // Update stock
+  product.stock -= quantity;
+  if (product.stock <= 0) product.available = "OutOfStock";
+  await product.save();
+
+  // Populate cart
+  const populatedCart = await Cart.findById(cart._id).populate(
+    "items.productId",
+    "Name Price Image"
+  );
+
+  // Calculate total price
+  const totalPrice = populatedCart.items.reduce(
+    (acc, item) => acc + item.productId.Price * item.quantity,
+    0
+  );
+
+  // Final response
+  return res.status(200).json({
+    success: true,
+    message: "Product added to cart successfully",
+    cart: {
+      items: populatedCart.items.map((item) => ({
+        id: item._id,
+        productId: item.productId._id,
+        name: item.productId.Name,
+        price: item.productId.Price,
+        quantity: item.quantity,
+        Image: item.productId.Image,
+      })),
+      totalPrice,
+    },
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// @desc    Get user cart (or return 10 suggested products if empty)
+// @route   GET /api/v1/cart
+// @access  Private (User only)
+export const getCart = asyncHandler(async (req, res) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "User not authenticated" });
+  }
+
+  const cart = await Cart.findOne({ userId })
+    .populate("items.productId", "Name Price Image available stock");
+
+  // If empty cart → return suggestions
+  if (!cart || cart.items.length === 0) {
+    const suggested = await Product.aggregate([
+      { $match: { available: "InStock", stock: { $gt: 0 } } },
+      { $sample: { size: 10 } },
+      { $project: { _id: 1, Name: 1, Price: 1, Image: 1 } },
+    ]);
+
+    const items = suggested.map((p) => ({
+      id: p._id,
+      productId: p._id,
+      name: p.Name,
+      price: p.Price,
+      quantity: 1,
+      Image: p.Image,
+      isSuggested: true,
+    }));
+
+    const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+    return res.status(200).json({
+      success: true,
+      message: "Cart is empty — showing suggested products",
+      cart: {
+        items,
+        totalPrice,
+        count: items.length,
+      },
+    });
+  }
+
+  // If cart has items
+  const items = cart.items.map((item) => ({
+    id: item._id,
+    productId: item.productId._id,
+    name: item.productId.Name,
+    price: item.productId.Price,
+    quantity: item.quantity,
+    Image: item.productId.Image,
+  }));
+
+  const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  return res.status(200).json({
+    success: true,
+    message: "Cart fetched successfully",
+    cart: {
+      items,
+      totalPrice,
+      count: items.length,
+    },
+  });
+});
