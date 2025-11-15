@@ -35,6 +35,7 @@ app.use(
       // "https://e-commerce-website-eight.vercel.app",
       "https://e-commarce-website-eight.vercel.app",
       "http://localhost:3000",
+      "https://basket-ecommerce-iota.vercel.app"
     ],
   
     credentials: true, // عشان الكوكيز تتبعت
