@@ -1285,6 +1285,113 @@ export const clearCart = asyncHandler(async (req, res) => {
 
 
 
+// @desc    Increase or Decrease item quantity in cart
+// @route   PATCH /api/v1/cart/update-quantity/:id?action=increase|decrease
+// @access  Private (User only)
+export const updateCartQuantity = asyncHandler(async (req, res) => {
+  const { id } = req.params; // cart item _id
+  const { action } = req.query; // increase | decrease
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "User not authenticated" });
+  }
+
+  const cart = await Cart.findOne({ userId });
+  if (!cart) {
+    return res.status(404).json({ message: "Cart not found" });
+  }
+
+  const itemIndex = cart.items.findIndex((i) => i._id.toString() === id);
+  if (itemIndex === -1) {
+    return res.status(404).json({ message: "Item not found in cart" });
+  }
+
+  const item = cart.items[itemIndex];
+  const product = await Product.findById(item.productId);
+
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  // ========== Increase Quantity ==========
+  if (action === "increase") {
+    // لو مفيش مخزون مش هينفع نزود
+    if (product.stock <= 0) {
+      return res.status(400).json({ message: "Product is out of stock" });
+    }
+
+    item.quantity += 1;
+    product.stock -= 1;
+
+    if (product.stock === 0) product.available = "OutOfStock";
+
+    await product.save();
+  }
+
+  // ========== Decrease Quantity ==========
+  else if (action === "decrease") {
+    // لو الكمية 1 → هنحذف العنصر نهائيًا
+    if (item.quantity === 1) {
+      product.stock += 1;
+      product.available = "InStock";
+      await product.save();
+
+      cart.items.splice(itemIndex, 1);
+    } else {
+      item.quantity -= 1;
+      product.stock += 1;
+      product.available = "InStock";
+      await product.save();
+    }
+  } 
+  else {
+    return res.status(400).json({ message: "Invalid action" });
+  }
+
+  await cart.save();
+
+  // Populate After Update
+  const populatedCart = await Cart.findById(cart._id).populate(
+    "items.productId",
+    "Name Price Image"
+  );
+
+  const totalPrice = populatedCart.items.reduce(
+    (acc, item) => acc + item.productId.Price * item.quantity,
+    0
+  );
+
+  res.status(200).json({
+    message: "Cart updated successfully",
+    cart: {
+      items: populatedCart.items.map((item) => ({
+        id: item._id,
+        productId: item.productId._id,
+        name: item.productId.Name,
+        price: item.productId.Price,
+        quantity: item.quantity,
+        Image: item.productId.Image,
+      })),
+      totalPrice,
+    }
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
