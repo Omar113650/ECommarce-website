@@ -45,9 +45,7 @@ export const getFavorites = asyncHandler(async (req, res) => {
   res.status(200).json(favorite);
 });
 
-// @desc   Clear user's favorite products
-// @route  DELETE /api/favorite
-// @access User
+
 // @desc   Clear user's favorite products
 // @route  DELETE /api/favorite/:userId
 // @access User/Admin
@@ -117,3 +115,5 @@ export const getTopFavoritesProduct = asyncHandler(async (req, res) => {
     data: favorites,
   });
 });
+
+
