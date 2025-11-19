@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { Favorite } from "../models/Wishlist.js";
+import mongoose from "mongoose";
 
 // @desc   Add or remove product from favorites
 // @route  POST /api/favorite
@@ -29,28 +30,50 @@ export const toggleFavorite = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "Added to favorites", favorite });
   }
 });
+
 // @desc   Get user's favorites
 // @route  GET /api/favorite/:userId
 // @access User
 export const getFavorites = asyncHandler(async (req, res) => {
-  const favorite = await Favorite.findOne({
-    userId: req.params.userId,
-  });
+  const favorite = await Favorite.findOne({ id: req.params._id }).populate(
+    "products",
+    "Name Price Image"
+  );
+
   if (!favorite) return res.status(404).json({ message: "No favorites found" });
 
   res.status(200).json(favorite);
 });
-// @desc   Get user's favorites
-// @route  GET /api/favorite/:userId
-// @access User
-export const DeleteFavorites = asyncHandler(async (req, res) => {
-  const Find_favorite = await Favorite.findOne({ products: req.params.id });
-  if (!Find_favorite)
-    return res.status(404).json({ message: "No favorites found" });
 
-  await Favorite.DeleteOne();
-  res.status(200).json(Find_favorite);
+// @desc   Clear user's favorite products
+// @route  DELETE /api/favorite
+// @access User
+// @desc   Clear user's favorite products
+// @route  DELETE /api/favorite/:userId
+// @access User/Admin
+export const DeleteFavorites = asyncHandler(async (req, res) => {
+
+  const userId = req.params.userId || req.user.id; // لو admin أو user الحالي
+
+  const favorite = await Favorite.findOne({ userId });
+
+  if (!favorite) {
+    return res.status(404).json({
+      success: false,
+      message: "No favorites found for this user",
+    });
+  }
+
+  favorite.products = [];
+  await favorite.save();
+
+  res.status(200).json({
+    success: true,
+    message: "All favorite products cleared",
+    favorite,
+  });
 });
+
 // @desc   Get top favorite products (most liked by users)
 // @route  GET /api/favorite/top
 // @access Public
