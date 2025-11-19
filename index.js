@@ -36,13 +36,13 @@ app.use(
       "https://e-commarce-website-eight.vercel.app",
       "http://localhost:3000",
       "https://basket-ecommerce-iota.vercel.app",
-      "https://basket-ecommerce-kftk.vercel.app"
+      "https://basket-ecommerce-kftk.vercel.app",
     ],
-  
+
     credentials: true, // عشان الكوكيز تتبعت
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+
     allowedHeaders: ["Content-Type", "Authorization"],
-    
   })
 );
 
@@ -65,15 +65,17 @@ app.use(
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: process.env.NODE_ENV === "production", // https
-    maxAge: 1000 * 60 * 60 * 24 // 1 day
-  }
-}));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // https
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
+  })
+);
 
 app.use(express.json());
 
@@ -116,41 +118,3 @@ app.listen(PORT, () => {
 });
 
 // https://e-commarce-website-eight.vercel.app
-
-// شرح السطر ده:
-// origin: "https://e-commarce-website-eight.vercel.app"
-// ده معناه إن السيرفر (الـ backend) يسمح فقط بطلبات جاية من الموقع ده (الـ frontend على Vercel).
-// لو أي موقع تاني حاول يبعت request → المتصفح هيمنعه.
-
-// credentials: true
-// ده بيسمح إن الكوكيز أو التوكن أو أي بيانات حساسة تتبعت مع الطلب (زي الـ JWT أو الـ session cookie).
-// وده ضروري لو عندك نظام تسجيل دخول أو توكن محفوظ في الكوكيز.
-
-// ⚠️ مهم جدًا:
-// لما تستخدم credentials: true لازم تتأكد إن الرد (response) فعلاً بيضيف الـ headers دي:
-// Access-Control-Allow-Origin: https://e-commarce-website-eight.vercel.app
-// Access-Control-Allow-Credentials: true
-
-// المتصفح هو اللي بيتأكد من دول، لو واحد منهم ناقص → يرفض الرد.
-
-// ✅ نصيحة إضافية:
-// لو بتجرب من localhost كمان أثناء التطوير، تقدر تعمل كده:
-// const allowedOrigins = [
-//   "http://localhost:5173",
-//   "https://e-commarce-website-eight.vercel.app"
-// ];
-
-// app.use(cors({
-//   origin: allowedOrigins,
-//   credentials: true
-// }));
-
-// ده بيخلي السيرفر يسمح بالـ requests سواء من Vercel أو localhost أثناء الـ development.
-
-// تحب أشرحلك كمان إزاي تتأكد إن إعدادات الـ CORS اتطبقت فعلاً (يعني إزاي تختبرها من المتصفح أو Postman)؟
-// You said:
-// كده ؟؟؟رapp.use(cors({
-//   origin: "http://localhost:5173","https://e-commarce-website-eight.vercel.app",
-  
-//   credentials: true
-// }));
