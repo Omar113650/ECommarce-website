@@ -12,11 +12,10 @@ import { VerifyToken } from "../middlewares/VerifyToken.js";
 const router = express.Router();
 
 router.post("/add-favorite", VerifyToken, toggleFavorite);
-router.get("/get-favorite/:userId", VerifyToken, ValidatedID, getFavorites);
+router.get("/get-favorite/:id", VerifyToken, getFavorites);
 router.delete(
-  "/delete-favorite/:productId",
+  "/delete-favorite/:userId",
   VerifyToken,
-  ValidatedID,
   DeleteFavorites
 );
 router.get("/get-top-favorite-product", VerifyToken, getTopFavoritesProduct);
