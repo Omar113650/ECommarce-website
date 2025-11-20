@@ -1,6 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { Favorite } from "../models/Wishlist.js";
-import mongoose from "mongoose";
+
 
 // @desc   Add or remove product from favorites
 // @route  POST /api/favorite
@@ -35,7 +35,7 @@ export const toggleFavorite = asyncHandler(async (req, res) => {
 // @route  GET /api/favorite/:userId
 // @access User
 export const getFavorites = asyncHandler(async (req, res) => {
-  const favorite = await Favorite.findOne({ id: req.params._id }).populate(
+  const favorite = await Favorite.findOne({ userId: req.params.id }).populate(
     "products",
     "Name Price Image"
   );
@@ -45,12 +45,10 @@ export const getFavorites = asyncHandler(async (req, res) => {
   res.status(200).json(favorite);
 });
 
-
 // @desc   Clear user's favorite products
 // @route  DELETE /api/favorite/:userId
 // @access User/Admin
 export const DeleteFavorites = asyncHandler(async (req, res) => {
-
   const userId = req.params.userId || req.user.id; // لو admin أو user الحالي
 
   const favorite = await Favorite.findOne({ userId });
@@ -116,17 +114,11 @@ export const getTopFavoritesProduct = asyncHandler(async (req, res) => {
   });
 });
 
-
-
-
-
-
 // 1️⃣ السبب الأساسي: اختلاف نوع userId
 
 // في الـ Favorite Schema عندك:
 
 // userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
-
 
 // يعني كل userId مخزّن كـ ObjectId في قاعدة البيانات.
 
@@ -134,7 +126,6 @@ export const getTopFavoritesProduct = asyncHandler(async (req, res) => {
 
 // const userId = req.user.id; // ده String
 // const deletedFavorite = await Favorite.findOneAndDelete({ userId });
-
 
 // هنا userId String → مش هيطابق الـ ObjectId في MongoDB → البحث فشل → رجع null → الرسالة "No favorites found".
 
@@ -144,7 +135,6 @@ export const getTopFavoritesProduct = asyncHandler(async (req, res) => {
 
 // const objectUserId = new mongoose.Types.ObjectId(userId);
 // const favorite = await Favorite.findOne({ userId: objectUserId });
-
 
 // دلوقتي النوع متوافق مع الـ Schema → البحث بيشتغل → يلاقي الـ document → تقدر تمسح المنتجات أو الـ document نفسه.
 
@@ -165,5 +155,3 @@ export const getTopFavoritesProduct = asyncHandler(async (req, res) => {
 // لو تحب، أقدر أرسملك مخطط workflow للـ Favorites CRUD يوضح الـ toggle, get, clear كلها مترابطة بحيث تفهم كل العمليات بطريقة منظمة.
 
 // تحب أعملهولك؟
-
-
