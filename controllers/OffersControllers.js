@@ -40,6 +40,7 @@ export const createOffer = asyncHandler(async (req, res) => {
     Image: imageData,
     Time: expiryTime,
     Brand,
+    offerType,
   });
   res.status(201).json({
     success: true,
@@ -50,8 +51,14 @@ export const createOffer = asyncHandler(async (req, res) => {
 // @desc Get All Offers
 // @route GET /api/Offers
 // @access Public
+
 export const getAllOffers = asyncHandler(async (req, res) => {
-  const offers = await Product.find().populate("categoryId", "name").lean();
+  const { offerType } = req.query;
+
+  const filter = {};
+  if (offerType) filter.offerType = offerType;
+
+  const offers = await Product.find(filter).lean();
 
   if (offers.length === 0) {
     return res.status(404).json({
@@ -59,6 +66,7 @@ export const getAllOffers = asyncHandler(async (req, res) => {
       message: "No offers found",
     });
   }
+
   res.status(200).json({
     success: true,
     count: offers.length,
@@ -68,38 +76,24 @@ export const getAllOffers = asyncHandler(async (req, res) => {
 // @desc Get Weekly Offers
 // @route GET /api/Offers/weekly
 // @access Public
-// export const getOffersThisWeek = asyncHandler(async (req, res) => {
-//   const now = new Date();
-//   const offers = await Product.find({ Time: { $gte: now } }).populate(
-//     "categoryId",
-//     "name"
-//   );
-//   if (!offers.length)
-//     return res.status(404).json({ message: "No weekly offers found" });
-
-//   res.status(200).json(offers);
-// });
 export const getOffersThisWeek = asyncHandler(async (req, res) => {
   const now = new Date();
 
-  // تحديد بداية الأسبوع (الأحد)
   const startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - now.getDay());
   startOfWeek.setHours(0, 0, 0, 0);
 
-  // تحديد نهاية الأسبوع (السبت)
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 7);
   endOfWeek.setHours(23, 59, 59, 999);
 
-  // ✨ استخدم aggregation علشان ترجع بيانات عشوائية
   const offers = await Product.aggregate([
     {
       $match: {
         createdAt: { $gte: startOfWeek, $lte: endOfWeek },
       },
     },
-    { $sample: { size: 10 } }, // ← عشوائي 10 عناصر
+    { $sample: { size: 10 } },
   ]);
 
   if (!offers.length) {
@@ -115,8 +109,6 @@ export const getOffersThisWeek = asyncHandler(async (req, res) => {
     offers,
   });
 });
-
-
 // @desc   Update Offer
 // @route  PUT /api/Offers/:id
 // @access Admin
