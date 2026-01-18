@@ -37,7 +37,7 @@ export const VerifyToken1 = asyncHandler(async (req, res, next) => {
 
     // مهم: req.user.id = decoded.id (مش _id)
     req.user = {
-      id: decoded.id,   // نفس اللي في الـ token
+      id: decoded.id, // نفس اللي في الـ token
       role: decoded.role,
     };
 

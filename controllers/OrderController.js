@@ -50,7 +50,6 @@ export const createOrder = async (req, res) => {
         $inc: { stock: -item.quantity },
       });
     }
-    // تجهيز الطلب
     const orderData = {
       userId,
       items: userCart.items.map((i) => ({

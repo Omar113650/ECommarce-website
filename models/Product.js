@@ -49,8 +49,11 @@ const ProductSchema = new mongoose.Schema(
 
     Time: {
       type: Date, // وقت انتهاء العرض
-      default: null,
+
     },
+    offerType:{
+      type:String
+    }
   },
   { timestamps: true }
 );

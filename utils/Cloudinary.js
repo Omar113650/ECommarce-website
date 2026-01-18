@@ -41,4 +41,4 @@ export const cloudinaryRemoveMultipleImage = async (PublicIds) => {
     return error;
   }
 };
-multer
+multer;

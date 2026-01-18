@@ -68,7 +68,7 @@ router.get("/success", (req, res) => {
         <h1>✅ Payment Successful!</h1>
         <p>Thank you for your payment. Your order is now being processed.</p>
         <p style="color: #28a745; font-weight: bold;">✅ Payment Confirmed by Server</p>
-        <a href="${process.env.CLIENT_URL}/">Go to Home</a>
+        <a href="https://basket-ecommerce-iota.vercel.app/">Go to Home</a>
       </div>
     </body>
   </html>
@@ -132,7 +132,7 @@ router.get("/cancel", (req, res) => {
         <div class="card">
           <h1>❌ Payment Cancelled</h1>
           <p>You have cancelled the payment process. You can try again.</p>
-          <a href="${process.env.CLIENT_URL}/">Back to Home</a>
+        <a href="https://basket-ecommerce-iota.vercel.app/">Go to Home</a>
         </div>
       </body>
     </html>

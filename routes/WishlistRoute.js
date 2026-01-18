@@ -6,7 +6,7 @@ import {
   getTopFavoritesProduct,
 } from "../controllers/WishlistController.js";
 
-import { ValidatedID } from "../middlewares/validateID.js";
+
 import { VerifyToken } from "../middlewares/VerifyToken.js";
 
 const router = express.Router();

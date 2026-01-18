@@ -51,9 +51,6 @@ export const getAllBlogs = asyncHandler(async (req, res) => {
     Blog.countDocuments(),
   ]);
 
-  // عملها ب طريقه اسهل فوق 
-  // const total = await Blog.countDocuments();
-
   res.status(200).json({
     success: true,
     count: blogs.length,
