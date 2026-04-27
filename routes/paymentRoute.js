@@ -130,7 +130,7 @@ router.get("/cancel", (req, res) => {
       </head>
       <body>
         <div class="card">
-          <h1>❌ Payment Cancelled</h1>
+          <h1> Payment Cancelled</h1>
           <p>You have cancelled the payment process. You can try again.</p>
         <a href="https://basket-ecommerce-iota.vercel.app/">Go to Home</a>
         </div>

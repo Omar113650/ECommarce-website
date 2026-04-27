@@ -28,14 +28,14 @@ router.get("/get-product/:id", VerifyToken, ValidatedID, getProductById);
 router.put("/update-product/:id", VerifyTokenAdmin, ValidatedID, updateProduct);
 router.delete(
   "/delete-product/:id",
-  // VerifyTokenAdmin,
+  VerifyTokenAdmin,
   ValidatedID,
   deleteProduct
 );
 router.get(
   "/category/:categoryId",
-  // VerifyToken,
-  // ValidatedID,
+  VerifyToken,
+  ValidatedID,
   getProductsByCategory
 );
 

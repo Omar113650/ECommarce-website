@@ -12,15 +12,15 @@ import { VerifyToken, VerifyTokenAdmin } from "../middlewares/VerifyToken.js";
 import { CategoryValidate } from "../validation/CategoryValidation.js";
 const router = express.Router();
 
-// router.get("/count/total", Count);
+
 router.post(
   "/add-category",
-  // VerifyTokenAdmin,
+  VerifyTokenAdmin,
   validate(CategoryValidate),
   upload.single("Image"),
   CreateCategory
 );
-// VerifyToken
+
 router.get("/get-category", GetCategory);
 router.put(
   "/update-category/:categoryId",

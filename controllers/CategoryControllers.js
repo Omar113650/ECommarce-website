@@ -27,7 +27,7 @@ export const CreateCategory = asyncHandler(async (req, res) => {
       .json({ message: "Failed to upload image to Cloudinary" });
   }
 
-  // Create category WITH image data
+ 
   const category = await Category.create({
     name: name.trim(),
     Image: {
@@ -48,12 +48,12 @@ export const GetCategory = asyncHandler(async (req, res) => {
   let { name } = req.query;
   const query = {};
 
-  // فلترة بالاسم لو موجود
+
   if (name?.trim()) {
     query.name = { $regex: name.trim(), $options: "i" };
   }
 
-  // نرجع فقط (name , Image) بدون أي بيانات زيادة
+ 
   const categories = await Category.find(query, { name: 1, Image: 1 }).sort({
     createdAt: -1,
   });
@@ -79,7 +79,7 @@ export const DeleteCategory = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Category not found" });
   }
 
-  // Delete image from Cloudinary if exists
+
   if (category.Image?.publicId) {
     await cloudinaryRemoveImage(category.Image.publicId);
   }

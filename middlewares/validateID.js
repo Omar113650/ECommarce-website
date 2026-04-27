@@ -9,18 +9,3 @@ export const ValidatedID = (req, res, next) => {
 
 
 
-
-
-
-
-// export const ValidatedID = (req, res, next) => {
-//   const id = req.params.id;
-  
-//   const isValid = /^[0-9a-fA-F]{24}$/.test(id);
-  
-//   if (!isValid) {
-//     return res.status(400).json({ message: "Invalid ID" });
-//   }
-
-//   next();
-// };

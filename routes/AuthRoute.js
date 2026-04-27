@@ -28,21 +28,19 @@ router.put("/update-profile/:id", UpdateProfile);
 router.get("/get-all-user", getAllUser);
 router.put("/update-user-role/:id", updateUserRole);
 
-// Google login
+
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-// Google callback
+
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   googleCallbackController
 );
 
-// /google	يرسل المستخدم لموقع Google لتسجيل الدخول	البداية
-// /google/callback	يستقبل المستخدم بعد موافقة Google ويعالج بياناته	النهاية
 
 // /http://localhost:8000/api/v1/auth/google
 

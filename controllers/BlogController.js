@@ -84,7 +84,7 @@ export const updateBlog = asyncHandler(async (req, res) => {
   if (!blog) {
     return res.status(404).json({ success: false, message: "Blog not found" });
   }
-  // Handle image update if provided
+
   let imageUpdate = product.Image;
   if (req.file) {
     if (product.Image?.publicId) {
@@ -121,7 +121,7 @@ export const deleteBlog = asyncHandler(async (req, res) => {
   if (!blog) {
     return res.status(404).json({ success: false, message: "Blog not found" });
   }
-  // Remove image from Cloudinary
+
   if (product.Image?.publicId) {
     await cloudinaryRemoveImage(product.Image.publicId);
   }

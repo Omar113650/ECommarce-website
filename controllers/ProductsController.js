@@ -78,14 +78,14 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   }
 
   // Pagination
-  // const skip = (Number(page) - 1) * Number(limit);
+  const skip = (Number(page) - 1) * Number(limit);
 
   const products = await Product.find(query)
     .populate("categoryId", "name")
     .populate("Brand", "Name")
-    .sort({ createdAt: -1 });
-  // .skip(skip)
-  // .limit(Number(limit));
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(Number(limit));
 
   const total = await Product.countDocuments(query);
 
@@ -107,7 +107,7 @@ export const getAllProducts = asyncHandler(async (req, res) => {
 export const getProductById = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id).populate(
     "categoryId",
-    "name"
+    "name",
   );
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
@@ -129,7 +129,6 @@ export const updateProduct = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Product not found" });
   }
 
-  // Check if category exists if provided
   if (categoryId) {
     const categoryExists = await Category.findById(categoryId);
     if (!categoryExists) {
@@ -137,7 +136,6 @@ export const updateProduct = asyncHandler(async (req, res) => {
     }
   }
 
-  // Handle image update if provided
   let imageUpdate = product.Image;
   if (req.file) {
     if (product.Image?.publicId) {
@@ -180,7 +178,6 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Product not found" });
   }
 
-  // Remove image from Cloudinary
   if (product.Image?.publicId) {
     await cloudinaryRemoveImage(product.Image.publicId);
   }

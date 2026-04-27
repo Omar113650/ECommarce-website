@@ -48,7 +48,7 @@ const ProductSchema = new mongoose.Schema(
     },
 
     Time: {
-      type: Date, // وقت انتهاء العرض
+      type: Date, 
 
     },
     offerType:{

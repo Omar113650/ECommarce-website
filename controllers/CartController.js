@@ -9,17 +9,14 @@ export const addToCart = asyncHandler(async (req, res) => {
   const userId = req.user?.id;
   const { productId, quantity } = req.body;
 
-  // Validate user
   if (!userId) {
     return res.status(401).json({ message: "User not authenticated" });
   }
 
-  // Validate input
   if (!productId || !Number.isInteger(quantity) || quantity <= 0) {
     return res.status(400).json({ message: "Invalid input" });
   }
 
-  // Validate product
   const product = await Product.findById(productId);
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
@@ -29,19 +26,17 @@ export const addToCart = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Insufficient stock" });
   }
 
-  // Handle cart
   let cart = await Cart.findOne({ userId });
 
   if (!cart) {
-    // Create new cart
     cart = await Cart.create({
       userId,
       items: [{ productId, quantity }],
     });
   } else {
-    // Check if product exists in cart
+    t;
     const index = cart.items.findIndex(
-      (item) => item.productId.toString() === productId
+      (item) => item.productId.toString() === productId,
     );
 
     if (index > -1) {
@@ -59,24 +54,20 @@ export const addToCart = asyncHandler(async (req, res) => {
     await cart.save();
   }
 
-  // Update stock
   product.stock -= quantity;
   if (product.stock <= 0) product.available = "OutOfStock";
   await product.save();
 
-  // Populate cart
   const populatedCart = await Cart.findById(cart._id).populate(
     "items.productId",
-    "Name Price Image"
+    "Name Price Image",
   );
 
-  // Calculate total price
   const totalPrice = populatedCart.items.reduce(
     (acc, item) => acc + item.productId.Price * item.quantity,
-    0
+    0,
   );
 
-  // Final response
   return res.status(200).json({
     success: true,
     message: "Product added to cart successfully",
@@ -100,7 +91,7 @@ export const addToCart = asyncHandler(async (req, res) => {
  * @access  Private (User only)
  */
 export const removeFromCart = asyncHandler(async (req, res) => {
-  const { id } = req.params; // item _id
+  const { id } = req.params;
   const userId = req.user?.id;
 
   if (!userId) {
@@ -121,7 +112,6 @@ export const removeFromCart = asyncHandler(async (req, res) => {
     const deletedItem = cart.items[itemIndex];
     cart.items.splice(itemIndex, 1);
 
-    // إرجاع الكمية للمخزون
     const product = await Product.findById(deletedItem.productId);
     if (product) {
       product.stock += deletedItem.quantity;
@@ -131,15 +121,14 @@ export const removeFromCart = asyncHandler(async (req, res) => {
 
     await cart.save();
 
-    // جلب الكارت بعد التحديث
     const populatedCart = await Cart.findById(cart._id).populate(
       "items.productId",
-      "Name Price Image"
+      "Name Price Image",
     );
 
     const totalPrice = populatedCart.items.reduce(
       (acc, item) => acc + item.productId.Price * item.quantity,
-      0
+      0,
     );
 
     res.status(200).json({
@@ -182,7 +171,6 @@ export const clearCart = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Cart not found" });
     }
 
-    // إرجاع كل الكميات للمخزون
     for (const item of cart.items) {
       const product = await Product.findById(item.productId);
       if (product) {
@@ -192,7 +180,6 @@ export const clearCart = asyncHandler(async (req, res) => {
       }
     }
 
-    // مسح الكارت
     cart.items = [];
     await cart.save();
 
@@ -226,13 +213,11 @@ export const getCart = asyncHandler(async (req, res) => {
     });
   }
 
-  // Get cart with products
   let cart = await Cart.findOne({ userId }).populate(
     "items.productId",
-    "Name Price Image available stock"
+    "Name Price Image available stock",
   );
 
-  // If empty → suggestions
   if (!cart || cart.items.length === 0) {
     const suggested = await Product.aggregate([
       { $match: { available: "InStock", stock: { $gt: 0 } } },
@@ -252,7 +237,7 @@ export const getCart = asyncHandler(async (req, res) => {
 
     const totalPrice = items.reduce(
       (acc, item) => acc + item.price * item.quantity,
-      0
+      0,
     );
 
     return res.status(200).json({
@@ -266,7 +251,6 @@ export const getCart = asyncHandler(async (req, res) => {
     });
   }
 
-  // 🔥 Fix: delete items that reference deleted products
   cart.items = cart.items.filter((item) => item.productId !== null);
   await cart.save();
 
@@ -282,7 +266,7 @@ export const getCart = asyncHandler(async (req, res) => {
 
   const totalPrice = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
-    0
+    0,
   );
 
   return res.status(200).json({
@@ -300,8 +284,8 @@ export const getCart = asyncHandler(async (req, res) => {
 // @route   PATCH /api/v1/cart/update-quantity/:id?action=increase|decrease
 // @access  Private (User only)
 export const updateCartQuantity = asyncHandler(async (req, res) => {
-  const { id } = req.params; // cart item _id
-  const { action } = req.query; // increase | decrease
+  const { id } = req.params;
+  const { action } = req.query;
   const userId = req.user?.id;
 
   if (!userId) {
@@ -327,9 +311,7 @@ export const updateCartQuantity = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Product not found" });
   }
 
-  // ========== Increase Quantity ==========
   if (action === "increase") {
-    // لو مفيش مخزون مش هينفع نزود
     if (product.stock <= 0) {
       return res.status(400).json({ message: "Product is out of stock" });
     }
@@ -340,11 +322,7 @@ export const updateCartQuantity = asyncHandler(async (req, res) => {
     if (product.stock === 0) product.available = "OutOfStock";
 
     await product.save();
-  }
-
-  // ========== Decrease Quantity ==========
-  else if (action === "decrease") {
-    // لو الكمية 1 → هنحذف العنصر نهائيًا
+  } else if (action === "decrease") {
     if (item.quantity === 1) {
       product.stock += 1;
       product.available = "InStock";
@@ -363,15 +341,14 @@ export const updateCartQuantity = asyncHandler(async (req, res) => {
 
   await cart.save();
 
-  // Populate After Update
   const populatedCart = await Cart.findById(cart._id).populate(
     "items.productId",
-    "Name Price Image"
+    "Name Price Image",
   );
 
   const totalPrice = populatedCart.items.reduce(
     (acc, item) => acc + item.productId.Price * item.quantity,
-    0
+    0,
   );
 
   res.status(200).json({

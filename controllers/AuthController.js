@@ -10,15 +10,14 @@ const generateTokens = (user) => {
   const AccessToken = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET,
-    // 15m
-    // 7d i do it because exist a some std no to apply a refresh
-    { expiresIn: "7d" }
+
+    { expiresIn: "7d" },
   );
 
   const refreshToken = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "7d" },
   );
 
   return { AccessToken, refreshToken };
@@ -67,7 +66,7 @@ export const RegisterUser = asyncHandler(async (req, res) => {
   //       <p style="font-size:15px; color:#333; line-height:1.6;">
   //         Your account is ready. Start exploring our products and enjoy a seamless shopping experience.
   //         <br><br>
-  //         <a href="https://your-ecommerce-site.com/login" 
+  //         <a href="https://your-ecommerce-site.com/login"
   //            style="display:inline-block; padding:12px 24px; margin-top:15px; background:#e67e22; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">
   //           Go to Dashboard
   //         </a>
@@ -130,7 +129,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   //       <p style="font-size:15px; color:#333; line-height:1.6;">
   //         Your account is ready. Start exploring our products and enjoy a seamless shopping experience.
   //         <br><br>
-  //         <a href="https://your-ecommerce-site.com/login" 
+  //         <a href="https://your-ecommerce-site.com/login"
   //            style="display:inline-block; padding:12px 24px; margin-top:15px; background:#e67e22; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">
   //           Go to Dashboard
   //         </a>
@@ -143,6 +142,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   //   </div>
   // `,
   // });
+
   res.status(200).json({
     message: "Login successful",
     user: {
@@ -275,8 +275,6 @@ export const RefreshToken = asyncHandler(async (req, res, next) => {
   }
 });
 
-// @desc    Google callback
-// محتاج : CLIENT_URL بتاع الفرونت
 export const googleCallbackController = (req, res) => {
   const user = req.user;
 
@@ -286,11 +284,11 @@ export const googleCallbackController = (req, res) => {
   const { AccessToken, refreshToken } = generateTokens(user);
   setRefreshCookie(res, refreshToken);
   return res.redirect(
-    `${process.env.CLIENT_URL}/login/success?access=${AccessToken}&refresh=${refreshToken}`
+    `${process.env.CLIENT_URL}/login/success?access=${AccessToken}&refresh=${refreshToken}`,
   );
 };
 
-// @desc    limit of login to avoid Brute-force
+// @desc  limit of login to avoid Brute-force
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,

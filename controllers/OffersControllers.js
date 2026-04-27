@@ -11,7 +11,7 @@ import {
 export const createOffer = asyncHandler(async (req, res) => {
   const { Name, Price, categoryId, available, review, offerType, Brand } =
     req.body;
-  // offerType ممكن تبقى "permanent" أو "weekly"
+
 
   let imageData = { url: "", publicId: null };
 
@@ -28,7 +28,7 @@ export const createOffer = asyncHandler(async (req, res) => {
   let expiryTime = null;
   if (offerType === "weekly") {
     const now = new Date();
-    expiryTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // بعد أسبوع بالضبط
+    expiryTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); 
   }
 
   const newOffer = await Product.create({
