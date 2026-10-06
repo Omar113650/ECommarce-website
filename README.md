@@ -1,12 +1,12 @@
-# E-Learning Platform
+# E-Commerce Backend System
 
-**Complete Online Learning Platform with Courses, Enrollments, Payments, AI Integration, and Multi-Role Management**
+**Complete E-Commerce Backend with Products, Cart, Wishlist, Orders, Payments, Google Authentication, and Cloud Storage**
 
-A complete E-Learning backend platform built with Node.js, Express.js, TypeScript, and MongoDB.
+A complete E-Commerce backend application built with Node.js and Express.js.
 
-The platform provides a complete infrastructure for managing users, courses, lessons, enrollments, evaluations, payments, comments, categories, and administrative operations.
+The platform provides the core infrastructure required for a modern online shopping system, including authentication, product management, categories, brands, shopping carts, wishlists, offers, orders, Stripe payments, payment webhooks, Google authentication, file uploads, email services, and administrative functionality.
 
-It also integrates external services such as AI capabilities, online payments, cloud-based file storage, and email services.
+The project follows a structured backend architecture that separates routes, controllers, models, middleware, validation, configuration, and external services.
 
 ---
 
@@ -16,94 +16,96 @@ It also integrates external services such as AI capabilities, online payments, c
 2. Core Features
 3. Tech Stack
 4. System Architecture
-5. Authentication and Authorization
-6. Course Management
-7. Lesson Management
-8. Categories
-9. Enrollment System
-10. Evaluation System
-11. Comments
-12. Payments
-13. AI Integration
-14. File Uploads
-15. Email Services
-16. Admin Dashboard
-17. Validation and Error Handling
-18. Project Structure
-19. Environment Configuration
-20. Installation and Setup
-21. Engineering Highlights
-22. Future Enhancements
-23. Author
+5. Authentication
+6. Google Authentication
+7. Product Management
+8. Category Management
+9. Brand Management
+10. Offers
+11. Shopping Cart
+12. Wishlist
+13. Order Management
+14. Payment System
+15. Stripe Webhooks
+16. Blog System
+17. Contact System
+18. File Uploads
+19. Email Services
+20. Validation and Error Handling
+21. Project Structure
+22. Environment Configuration
+23. Installation and Setup
+24. Engineering Highlights
+25. Future Enhancements
+26. Author
 
 ---
 
 # Project Overview
 
-The E-Learning Platform is a backend system designed to manage the complete online learning lifecycle.
+The E-Commerce Backend System provides the server-side infrastructure required to operate an online shopping platform.
 
-The platform allows users to discover courses, access lessons, enroll in courses, submit evaluations, interact through comments, and complete payments.
-
-Administrators can manage the platform through dedicated administrative functionality and dashboard endpoints.
-
-The backend also integrates AI functionality, cloud-based file management, payment processing, and email services.
-
-A simplified platform flow:
+The system manages the complete shopping lifecycle:
 
 ```text
-User
- |
- v
+User Registration
+        |
+        v
 Authentication
- |
- v
-Browse Courses
- |
- v
-View Course
- |
- v
-Enroll
- |
- v
-Payment
- |
- v
-Access Lessons
- |
- v
-Evaluate Course
- |
- v
-Interact through Comments
+        |
+        v
+Browse Products
+        |
+        v
+Search / Categories / Brands
+        |
+        v
+Add to Cart
+        |
+        v
+Checkout
+        |
+        v
+Create Order
+        |
+        v
+Stripe Payment
+        |
+        v
+Payment Webhook
+        |
+        v
+Confirm Order
 ```
+
+The platform also provides supporting functionality including wishlists, offers, blogs, contact messages, Google authentication, cloud-based media storage, and email services.
 
 ---
 
 # Core Features
 
-The platform includes:
+The backend includes:
 
-- User Authentication
-- Email Verification
-- Password Reset
-- User Management
-- Course Management
-- Lesson Management
+- User Registration and Authentication
+- Google Authentication
+- Product Management
 - Category Management
-- Course Enrollment
-- Course Evaluations
-- Course Comments
-- Payment Processing
-- Payment Session Creation
-- AI Integration
-- File Upload Management
+- Brand Management
+- Shopping Cart
+- Wishlist
+- Order Management
+- Offers and Promotions
+- Stripe Payment Integration
+- Stripe Webhook Handling
+- Blog Management
+- Contact Us System
 - Cloudinary Integration
+- File Upload Management
 - Email Services
-- Admin Dashboard
 - Request Validation
+- ID Validation
+- Authentication Middleware
 - Centralized Error Handling
-- Application Logging
 
 ---
 
@@ -113,314 +115,457 @@ The platform includes:
 |---|---|
 | Runtime | Node.js |
 | Backend Framework | Express.js |
-| Language | TypeScript |
 | Database | MongoDB |
 | ODM | Mongoose |
-| Authentication | JWT-based Authentication |
+| Authentication | Token-Based Authentication |
+| Google Authentication | Passport.js |
+| Payments | Stripe |
+| Payment Events | Stripe Webhooks |
 | File Upload | Multer |
 | Cloud Storage | Cloudinary |
-| Payments | Paymob |
-| AI Integration | Google Gemini |
 | Email | Email Service |
 | Validation | Custom Validation Middleware |
-| Logging | Application Logger |
-| Architecture | Controller / Model / Route / Service Architecture |
+| Deployment Configuration | Vercel |
+| Architecture | Route / Controller / Model Architecture |
 
 ---
 
 # System Architecture
 
-The backend follows a modular Express architecture.
+The backend follows a layered Express architecture:
 
 ```text
-                     Client Application
-                            |
-                            v
-                       Express API
-                            |
-              ---------------------------
-              |            |            |
-              v            v            v
-        Middleware     Validation    Authentication
-              |
-              v
-            Routes
-              |
-              v
-         Controllers
-              |
-              v
-        Business Logic
-              |
-       -------------------
-       |        |        |
-       v        v        v
-    MongoDB   Services   External APIs
-       |        |            |
-       v        |      -----------------
-    Mongoose    |      |       |       |
-                v      v       v       v
-             Email   Paymob Gemini Cloudinary
+                        Client Application
+                               |
+                               v
+                          Express API
+                               |
+               --------------------------------
+               |              |               |
+               v              v               v
+          Validation     Authentication     Middleware
+               |
+               v
+             Routes
+               |
+               v
+          Controllers
+               |
+               v
+         Business Logic
+               |
+       ----------------------
+       |                    |
+       v                    v
+    MongoDB           External Services
+       |                    |
+       v          -------------------------
+    Mongoose       |          |            |
+                   v          v            v
+                Stripe    Cloudinary     Email
 ```
 
-This architecture separates HTTP routing, request validation, business logic, database models, and external service integrations.
+This separation makes the backend easier to maintain and extend.
 
 ---
 
-# Authentication and Authorization
+# Authentication
 
-Authentication logic is handled through:
-
-```text
-AuthController.ts
-authMiddleware.ts
-Auth.routes.ts
-```
-
-The authentication layer is responsible for protecting private resources and identifying authenticated users.
-
-The project also contains dedicated models for account verification and password recovery:
+Authentication functionality is organized through:
 
 ```text
-VerificationCode.ts
-PasswordResetToken.ts
+controllers/
+    AuthController.js
+
+routes/
+    AuthRoute.js
+
+middlewares/
+    VerifyToken.js
+
+models/
+    users.js
 ```
 
-A typical authentication workflow:
+The authentication system is responsible for identifying users and protecting private endpoints.
+
+A typical authentication flow:
 
 ```text
 Register
    |
    v
+Validate Request
+   |
+   v
 Create User
-   |
-   v
-Verification Code
-   |
-   v
-Verify Account
    |
    v
 Login
    |
    v
+Validate Credentials
+   |
+   v
 Generate Authentication Token
    |
    v
-Access Protected Resources
+Client Sends Token
+   |
+   v
+VerifyToken Middleware
+   |
+   v
+Protected Resource
 ```
 
 ---
 
-# User Management
+# Google Authentication
 
-User operations are handled through:
+The project contains dedicated Google authentication functionality.
 
-```text
-UserController.ts
-User.ts
-user.routes.ts
-```
-
-The user module is responsible for user-related operations and account management.
-
-User information also connects with other platform resources such as:
-
-- Enrollments
-- Evaluations
-- Comments
-- Payments
-- Courses
-
----
-
-# Course Management
-
-Courses represent the main educational resource in the platform.
-
-Course functionality is implemented through:
+Relevant files include:
 
 ```text
-CourseController.ts
-Course.ts
-course.route.ts
+config/
+    passport.js
+
+models/
+    LoginGoogle.js
 ```
 
-The course system can support operations such as:
-
-- Create courses
-- Retrieve courses
-- Update courses
-- Delete courses
-- Organize courses by category
-- Connect lessons to courses
-- Manage course enrollment
-- Manage course evaluations
-- Manage course comments
-
----
-
-# Lesson Management
-
-Lessons are managed separately from courses.
-
-The project contains:
-
-```text
-LessonController.ts
-Lesson.ts
-Lesson.routes.ts
-```
-
-A course can contain multiple lessons.
+Passport.js handles the authentication strategy.
 
 Conceptually:
 
 ```text
-Course
-  |
-  +---- Lesson 1
-  |
-  +---- Lesson 2
-  |
-  +---- Lesson 3
-  |
-  +---- Lesson N
+User
+ |
+ v
+Login with Google
+ |
+ v
+Passport.js
+ |
+ v
+Google Authentication
+ |
+ v
+User Profile
+ |
+ v
+Create / Find User
+ |
+ v
+Authenticated Session
 ```
 
-Separating lessons from courses keeps the content architecture flexible and easier to maintain.
+This provides users with an alternative to traditional email and password authentication.
+
+---
+
+# Product Management
+
+Products represent the main resources of the E-Commerce platform.
+
+Implementation:
+
+```text
+controllers/
+    ProductsController.js
+
+models/
+    Product.js
+
+routes/
+    ProductRoute.js
+```
+
+The product module handles operations such as:
+
+- Create products
+- Retrieve products
+- Update products
+- Delete products
+- Associate products with categories
+- Associate products with brands
+- Manage product information
+- Manage product media
+- Handle pricing
 
 ---
 
 # Category Management
 
-Courses can be organized into categories.
+Products can be organized into categories.
 
-Category functionality is implemented through:
+Implementation:
 
 ```text
-CategoryController.ts
-Category.ts
-category.routes.ts
+controllers/
+    CategoryControllers.js
+
+models/
+    Category.js
+
+routes/
+    CategoryRoute.js
 ```
 
-Conceptually:
+Relationship:
 
 ```text
 Category
    |
-   +---- Course
+   +---- Product
    |
-   +---- Course
+   +---- Product
    |
-   +---- Course
+   +---- Product
 ```
 
-Categories make course discovery and organization easier.
+Categories make product organization and discovery easier.
 
 ---
 
-# Enrollment System
+# Brand Management
 
-The platform contains a dedicated enrollment module.
+The platform provides a dedicated brand management module.
 
 Implementation:
 
 ```text
-EnrollmentController.ts
-Enrollment.ts
-Enrollment.routes.ts
+controllers/
+    BrandController.js
+
+models/
+    Brand.js
+
+routes/
+    BrandRoute.js
 ```
 
-The enrollment system connects users with courses.
+Products can be associated with brands to provide additional filtering and organization.
 
-A typical workflow:
+Conceptually:
+
+```text
+Brand
+  |
+  +---- Product
+  |
+  +---- Product
+  |
+  +---- Product
+```
+
+---
+
+# Offers and Promotions
+
+The platform includes a dedicated offers module.
+
+Implementation:
+
+```text
+controllers/
+    OffersControllers.js
+
+routes/
+    OfferRoute.js
+```
+
+Offers can be used to provide promotional functionality within the store.
+
+They can be integrated with products and checkout logic depending on the business rules of the application.
+
+---
+
+# Shopping Cart
+
+The shopping cart allows users to prepare products before completing an order.
+
+Implementation:
+
+```text
+controllers/
+    CartController.js
+
+models/
+    Cart.js
+
+routes/
+    CartRoute.js
+```
+
+The cart system can handle operations such as:
+
+- Add product to cart
+- Remove product from cart
+- Update product quantity
+- Retrieve user cart
+- Calculate cart contents
+- Prepare products for checkout
+
+Typical flow:
 
 ```text
 User
  |
  v
-Select Course
+Select Product
  |
  v
-Validate Course
+Add to Cart
  |
  v
-Check Existing Enrollment
+Validate Product
  |
  v
-Process Required Payment
+Update Cart
  |
  v
-Create Enrollment
- |
- v
-Grant Course Access
+Continue Shopping
+      |
+      v
+   Checkout
 ```
-
-Enrollment is an important business entity because it represents the relationship between a learner and a course.
 
 ---
 
-# Evaluation System
+# Wishlist
 
-Students can evaluate courses through a dedicated evaluation system.
+The wishlist allows users to save products for future consideration.
 
 Implementation:
 
 ```text
-EvaluationController.ts
-Evaluation.ts
-EvaluationRoutes.ts
+controllers/
+    WishlistController.js
+
+models/
+    Wishlist.js
+
+routes/
+    WishlistRoute.js
 ```
 
-Evaluations can be associated with:
+Typical operations include:
+
+- Add product to wishlist
+- Remove product from wishlist
+- Retrieve wishlist
+- Save products for later
+
+Conceptually:
 
 ```text
 User
-  |
-  v
-Course
-  |
-  v
-Evaluation
+ |
+ v
+Product
+ |
+ v
+Add to Wishlist
+ |
+ v
+Wishlist
 ```
-
-This allows the platform to collect feedback about educational content.
 
 ---
 
-# Comment System
+# Order Management
 
-The platform includes course-related commenting functionality.
+Orders represent completed or pending purchase requests.
 
 Implementation:
 
 ```text
-CommentController.ts
-Comment.ts
-commentRoutes.ts
+controllers/
+    OrderController.js
+
+models/
+    Order.js
+
+routes/
+    OrderRoute.js
 ```
 
-Comments allow users to interact with course content and provide feedback or discussion.
+The order module is responsible for handling the relationship between users, products, checkout, and payments.
+
+A typical order workflow:
+
+```text
+Shopping Cart
+     |
+     v
+Checkout
+     |
+     v
+Validate Order Data
+     |
+     v
+Create Order
+     |
+     v
+Create Payment
+     |
+     v
+Payment Processing
+     |
+     v
+Update Order
+```
 
 ---
 
-# Payments
+# Order Lifecycle
 
-The platform includes payment functionality.
+An order can move through several business states depending on the implementation.
 
-Payment-related files include:
+Conceptually:
 
 ```text
-PaymentController.ts
-Payment.model.ts
-PaymentRoutes.ts
-createPaymentSessionController.ts
-paymobService.ts
+PENDING
+   |
+   v
+PAID
+   |
+   v
+PROCESSING
+   |
+   v
+SHIPPED
+   |
+   v
+DELIVERED
 ```
 
-The architecture separates payment business logic from the external payment provider integration.
+Alternative transitions can include cancellation or payment failure.
+
+Explicit order states make order processing easier to maintain.
+
+---
+
+# Payment System
+
+The project contains a dedicated payment layer.
+
+Relevant files:
+
+```text
+controllers/
+    PaymentController.js
+
+models/
+    Stripe.js
+
+routes/
+    paymentRoute.js
+```
+
+Stripe is used as the payment provider.
 
 A typical payment flow:
 
@@ -428,134 +573,228 @@ A typical payment flow:
 User
  |
  v
-Select Course
+Checkout
  |
  v
-Create Payment Session
+Order
  |
  v
-Paymob Service
+Payment Controller
  |
  v
-Payment Gateway
+Stripe
+ |
+ v
+Payment Processing
  |
  v
 Payment Result
- |
- v
-Store Payment
- |
- v
-Complete Enrollment
 ```
 
-This separation makes the payment integration easier to maintain.
+Keeping payment logic separated from product and cart logic makes the application easier to maintain.
 
 ---
 
-# Paymob Integration
+# Stripe Integration
 
-The project contains:
-
-```text
-paymobService.ts
-```
-
-This service acts as an integration layer between the application and Paymob.
+Stripe provides the external payment infrastructure for the platform.
 
 Conceptually:
 
 ```text
-Application
-    |
-    v
+E-Commerce Backend
+        |
+        v
 Payment Controller
-    |
-    v
-Paymob Service
-    |
-    v
-Paymob API
+        |
+        v
+Stripe API
+        |
+        v
+Payment Processing
+        |
+        v
+Payment Result
 ```
 
-Keeping payment provider logic inside a dedicated service reduces coupling between controllers and external APIs.
+Sensitive payment operations should always be performed or verified by the backend.
+
+The client should never be trusted to determine whether an order has been successfully paid.
 
 ---
 
-# AI Integration
+# Stripe Webhooks
 
-The project contains dedicated AI functionality.
+The project includes dedicated Stripe webhook handling.
 
-AI-related files include:
-
-```text
-aiController.ts
-ai.ts
-aiHelper.ts
-gemini.ts
-```
-
-The architecture separates AI routing, controller logic, helper functionality, and the AI provider integration.
-
-Conceptually:
+Implementation:
 
 ```text
-Client
-  |
-  v
-AI Route
-  |
-  v
-AI Controller
-  |
-  v
-AI Helper
-  |
-  v
-Gemini Integration
-  |
-  v
-AI Response
+controllers/
+    webhookController.js
+
+routes/
+    stripeWebhook.js
 ```
 
-This makes AI functionality independent from the core educational modules.
+Webhooks allow Stripe to notify the backend when payment-related events occur.
+
+The flow follows:
+
+```text
+Customer
+   |
+   v
+Stripe Payment
+   |
+   v
+Stripe
+   |
+   v
+Webhook Event
+   |
+   v
+stripeWebhook
+   |
+   v
+webhookController
+   |
+   v
+Verify Event
+   |
+   v
+Update Payment / Order
+```
+
+This is important because the backend should not depend only on the client redirect or frontend response to confirm payments.
+
+Stripe can communicate the final payment result directly to the server.
 
 ---
 
-# Gemini Integration
+# Why Webhooks Matter
 
-The project includes:
+Consider this situation:
 
 ```text
-gemini.ts
+User Completes Payment
+        |
+        v
+Payment Successful
+        |
+        v
+User Closes Browser
 ```
 
-This indicates a dedicated integration layer for Google Gemini.
+If the backend depends entirely on the frontend to report success, the order may never be updated.
 
-The AI functionality can be used to extend the learning experience without coupling the entire application directly to the AI provider.
+With a webhook:
+
+```text
+Stripe
+   |
+   v
+Backend Webhook
+   |
+   v
+Update Order
+```
+
+The payment result can still be processed independently of the user's browser.
+
+---
+
+# Blog System
+
+The E-Commerce platform also includes a blog module.
+
+Implementation:
+
+```text
+controllers/
+    BlogController.js
+
+models/
+    Blog.js
+
+routes/
+    BlogRoute.js
+```
+
+The blog system can be used for content such as:
+
+- Store announcements
+- Product guides
+- News
+- Marketing content
+- Educational articles
+
+This allows content management to exist within the same backend platform.
+
+---
+
+# Contact System
+
+The platform contains a Contact Us module.
+
+Implementation:
+
+```text
+controllers/
+    ContactusController.js
+
+models/
+    Contactus.js
+
+routes/
+    ContactRoute.js
+```
+
+A typical flow:
+
+```text
+Visitor
+  |
+  v
+Contact Form
+  |
+  v
+Validate Request
+  |
+  v
+Contact Controller
+  |
+  v
+Store Message
+```
+
+This provides a structured way to manage customer inquiries.
 
 ---
 
 # File Upload Management
 
-The platform contains dedicated file upload middleware:
+The project contains dedicated file upload functionality.
+
+Implementation:
 
 ```text
-multer.ts
+utils/
+    multer.js
 ```
 
-Multer handles multipart/form-data uploads before files are processed or uploaded to external storage.
+Multer processes multipart/form-data requests.
 
-A typical flow:
+A typical upload flow:
 
 ```text
 Client
   |
   v
-Upload File
+Upload Image
   |
   v
-Multer Middleware
+Multer
   |
   v
 Validate File
@@ -564,132 +803,155 @@ Validate File
 Cloudinary
   |
   v
-Store File Reference
+Store Image URL
 ```
+
+This can be used for product images and other media resources.
 
 ---
 
 # Cloudinary Integration
 
-Cloud-based file storage is handled through:
+Cloud storage functionality is implemented through:
 
 ```text
-Cloudinary.ts
+utils/
+    Cloudinary.js
 ```
 
-Cloudinary can be used for storing resources such as:
+Cloudinary can store uploaded assets outside the application server.
 
-- Course images
-- User images
-- Educational assets
-- Uploaded media
+Conceptually:
 
-This prevents the backend server from depending entirely on local file storage.
+```text
+Product Image
+     |
+     v
+Multer
+     |
+     v
+Cloudinary
+     |
+     v
+Cloud URL
+     |
+     v
+Product
+```
+
+This avoids depending entirely on local server storage for uploaded assets.
 
 ---
 
 # Email Services
 
-The project contains:
+The project contains a dedicated email utility:
 
 ```text
-emailServices.ts
+utils/
+    emailServices.js
 ```
 
-The email layer can support workflows such as:
+Email functionality can support account and platform communication.
 
-- Email verification
-- Password reset
-- Account notifications
-- Enrollment-related emails
-- Payment-related notifications
+Examples include:
 
-Conceptually:
+- Account-related emails
+- Authentication emails
+- Order-related emails
+- Payment-related emails
+- Customer communication
 
-```text
-Application Event
-       |
-       v
-Email Service
-       |
-       v
-Email Provider
-       |
-       v
-User Inbox
-```
-
----
-
-# Admin Dashboard
-
-Administrative dashboard functionality is handled through:
-
-```text
-adminDashboardController.ts
-AdminRoutes.ts
-```
-
-The Admin Dashboard can provide centralized access to platform management and statistics.
-
-Administrative operations may include:
-
-- User management
-- Course management
-- Enrollment monitoring
-- Payment monitoring
-- Platform statistics
-- Content management
+Keeping email logic inside a shared utility avoids duplicating email implementation across controllers.
 
 ---
 
 # Validation
 
-The project includes dedicated validation functionality.
+Request validation is separated from controller logic.
 
-Relevant files include:
+Relevant files:
 
 ```text
-validate.ts
-ValidateID.ts
+middlewares/
+    Validate.js
+    validateID.js
+
 validation/
 ```
-
-Validation middleware ensures that invalid requests are rejected before reaching core business logic.
 
 A typical request flow:
 
 ```text
-Request
-   |
-   v
+HTTP Request
+     |
+     v
+Validate Request
+     |
+     v
 Validate ID
-   |
-   v
-Validate Body
-   |
-   v
-Authentication
-   |
-   v
+     |
+     v
+Verify Authentication
+     |
+     v
 Controller
+     |
+     v
+Business Logic
 ```
 
-This keeps controllers focused on application logic rather than repeated validation code.
+This keeps invalid requests from reaching core application logic.
+
+---
+
+# Authentication Middleware
+
+Protected routes use:
+
+```text
+middlewares/
+    VerifyToken.js
+```
+
+Conceptually:
+
+```text
+Request
+  |
+  v
+Read Token
+  |
+  v
+Verify Token
+  |
+  +---- Invalid -> Reject Request
+  |
+  +---- Valid
+          |
+          v
+     Attach User
+          |
+          v
+      Controller
+```
+
+This provides centralized authentication protection.
 
 ---
 
 # Error Handling
 
-The project includes centralized error handling through:
+The project includes centralized error handling:
 
 ```text
-Error.ts
+middlewares/
+    error.js
 ```
 
 Centralized error handling helps provide consistent API responses.
 
-Common HTTP errors may include:
+Typical HTTP errors include:
 
 ```text
 400 Bad Request
@@ -700,77 +962,57 @@ Common HTTP errors may include:
 500 Internal Server Error
 ```
 
----
-
-# Logging
-
-The project contains:
-
-```text
-logger.ts
-```
-
-Centralized logging can be used to track:
-
-- Application activity
-- API errors
-- Authentication issues
-- Payment operations
-- External service failures
-- Unexpected application behavior
-
-Logging is important for debugging and production monitoring.
+Instead of implementing separate error handling logic inside every controller, errors can be forwarded to shared middleware.
 
 ---
 
 # Database Models
 
-The project contains the following main models:
+The main models include:
 
 ```text
-Category.ts
-Comment.ts
-Course.ts
-Enrollment.ts
-Evaluation.ts
-Lesson.ts
-PasswordResetToken.ts
-Payment.model.ts
-User.ts
-VerificationCode.ts
+Blog.js
+Brand.js
+Cart.js
+Category.js
+Contactus.js
+LoginGoogle.js
+Order.js
+Product.js
+Stripe.js
+Wishlist.js
+users.js
 ```
 
-The relationships between these models are configured through:
-
-```text
-associations.ts
-```
-
-A simplified domain model:
+A simplified domain relationship can be represented as:
 
 ```text
 User
  |
- +---- Enrollments
+ +---- Cart
  |
- +---- Evaluations
+ +---- Wishlist
  |
- +---- Comments
+ +---- Orders
  |
  +---- Payments
 
 
 Category
  |
- +---- Courses
-         |
-         +---- Lessons
-         |
-         +---- Enrollments
-         |
-         +---- Evaluations
-         |
-         +---- Comments
+ +---- Products
+
+
+Brand
+ |
+ +---- Products
+
+
+Order
+ |
+ +---- Products
+ |
+ +---- Payment
 ```
 
 ---
@@ -780,131 +1022,172 @@ Category
 The actual project structure follows:
 
 ```text
-src/
-|
-|-- config/
-|   `-- connectDB.ts
-|
-|-- controllers/
-|   |-- AuthController.ts
-|   |-- CategoryController.ts
-|   |-- CommentController.ts
-|   |-- CourseController.ts
-|   |-- EnrollmentController.ts
-|   |-- EvaluationController.ts
-|   |-- LessonController.ts
-|   |-- PaymentController.ts
-|   |-- UserController.ts
-|   |-- adminDashboardController.ts
-|   |-- aiController.ts
-|   `-- createPaymentSessionController.ts
-|
-|-- middlewares/
-|   |-- Error.ts
-|   |-- ValidateID.ts
-|   |-- authMiddleware.ts
-|   |-- multer.ts
-|   `-- validate.ts
-|
-|-- models/
-|   |-- Category.ts
-|   |-- Comment.ts
-|   |-- Course.ts
-|   |-- Enrollment.ts
-|   |-- Evaluation.ts
-|   |-- Lesson.ts
-|   |-- PasswordResetToken.ts
-|   |-- Payment.model.ts
-|   |-- User.ts
-|   |-- VerificationCode.ts
-|   `-- associations.ts
-|
-|-- routes/
-|   |-- AdminRoutes.ts
-|   |-- Auth.routes.ts
-|   |-- Enrollment.routes.ts
-|   |-- EvaluationRoutes.ts
-|   |-- Lesson.routes.ts
-|   |-- PaymentRoutes.ts
-|   |-- ai.ts
-|   |-- category.routes.ts
-|   |-- commentRoutes.ts
-|   |-- course.route.ts
-|   `-- user.routes.ts
-|
-|-- services/
-|   |-- aiHelper.ts
-|   |-- gemini.ts
-|   `-- paymobService.ts
-|
-|-- utils/
-|   |-- cache/
-|   |-- Cloudinary.ts
-|   |-- emailServices.ts
-|   `-- logger.ts
-|
-|-- validation/
-|
-|-- appStatus.json
-|-- client.ts
-`-- index.ts
+config/
+|-- connectDB.js
+`-- passport.js
+
+controllers/
+|-- AuthController.js
+|-- BlogController.js
+|-- BrandController.js
+|-- CartController.js
+|-- CategoryControllers.js
+|-- ContactusController.js
+|-- OffersControllers.js
+|-- OrderController.js
+|-- PaymentController.js
+|-- ProductsController.js
+|-- WishlistController.js
+`-- webhookController.js
+
+middlewares/
+|-- Validate.js
+|-- VerifyToken.js
+|-- error.js
+`-- validateID.js
+
+models/
+|-- Blog.js
+|-- Brand.js
+|-- Cart.js
+|-- Category.js
+|-- Contactus.js
+|-- LoginGoogle.js
+|-- Order.js
+|-- Product.js
+|-- Stripe.js
+|-- Wishlist.js
+`-- users.js
+
+routes/
+|-- AuthRoute.js
+|-- BlogRoute.js
+|-- BrandRoute.js
+|-- CartRoute.js
+|-- CategoryRoute.js
+|-- ContactRoute.js
+|-- OfferRoute.js
+|-- OrderRoute.js
+|-- ProductRoute.js
+|-- WishlistRoute.js
+|-- paymentRoute.js
+`-- stripeWebhook.js
+
+utils/
+|-- Cloudinary.js
+|-- emailServices.js
+`-- multer.js
+
+validation/
+
+.gitignore
+README.md
+index.js
+package-lock.json
+package.json
+vercel.json
 ```
 
-The architecture follows a clear separation between:
+The overall request flow follows:
 
 ```text
-Routes
-   |
-   v
+Client
+  |
+  v
+Route
+  |
+  v
 Middleware
-   |
-   v
-Controllers
-   |
-   v
-Services
-   |
-   v
-Models / External Services
+  |
+  v
+Controller
+  |
+  v
+Model / External Service
+  |
+  v
+Response
+```
+
+---
+
+# Database Connection
+
+Database configuration is separated into:
+
+```text
+config/
+    connectDB.js
+```
+
+This keeps database initialization outside the main application entry point.
+
+Conceptually:
+
+```text
+Application Start
+       |
+       v
+connectDB
+       |
+       v
+MongoDB
+       |
+       v
+Start Express Server
 ```
 
 ---
 
 # Environment Configuration
 
-The exact environment variables depend on the implementation, but the project may require configuration for:
+The exact environment variable names should match the implementation, but the project may require configuration similar to:
 
 ```env
 PORT=3000
 
-DATABASE_URL=your_database_connection_string
+MONGODB_URI=your_mongodb_connection_string
 
 JWT_SECRET=your_jwt_secret
 
-CLOUDINARY_CLOUD_NAME=your_cloud_name
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-
-PAYMOB_API_KEY=your_paymob_api_key
-
-GEMINI_API_KEY=your_gemini_api_key
 
 EMAIL_USER=your_email
 EMAIL_PASSWORD=your_email_password
 ```
 
-Never commit production credentials or API keys to Git.
+Never commit real credentials, secrets, or API keys to Git.
 
 ---
 
 # Installation and Setup
 
-## Clone the Repository
+## Requirements
+
+Install:
+
+- Node.js
+- MongoDB
+- npm
+
+---
+
+## Clone Repository
 
 ```bash
 git clone <repository-url>
 cd <project-directory>
 ```
+
+---
 
 ## Install Dependencies
 
@@ -912,59 +1195,113 @@ cd <project-directory>
 npm install
 ```
 
+---
+
 ## Configure Environment Variables
 
-Create the required `.env` file and configure the database and external services.
+Create the required `.env` file and configure:
 
-## Start Development Server
+- MongoDB
+- Authentication
+- Google OAuth
+- Stripe
+- Cloudinary
+- Email service
+
+---
+
+## Start Application
+
+Use the development or production script configured inside `package.json`.
+
+For example:
 
 ```bash
 npm run dev
 ```
 
-The exact scripts should follow the scripts configured inside `package.json`.
+or:
+
+```bash
+npm start
+```
+
+---
+
+# Deployment
+
+The project contains:
+
+```text
+vercel.json
+```
+
+This provides Vercel-specific deployment configuration.
+
+The exact deployment behavior depends on the configuration defined inside the file.
 
 ---
 
 # Engineering Highlights
 
-The project demonstrates several important backend engineering concepts.
+This project demonstrates several important backend engineering concepts beyond standard CRUD operations.
 
-## Modular Express Architecture
+## Complete E-Commerce Workflow
 
-The application separates routes, controllers, middleware, models, services, utilities, and validation.
+The system connects products, carts, wishlists, orders, and payments into a complete shopping workflow.
 
-## Authentication Workflows
+## Payment Webhooks
 
-Authentication includes supporting infrastructure for verification codes and password reset tokens.
+Stripe webhooks provide server-to-server payment event handling instead of depending entirely on frontend confirmation.
 
-## Payment Integration
+## External Authentication
 
-Paymob is isolated behind a dedicated service layer.
+Passport.js provides Google authentication alongside the application's standard authentication system.
 
-## AI Integration
+## Separation of Concerns
 
-Google Gemini integration is separated into AI routes, controllers, helpers, and provider logic.
+Routes, controllers, models, middleware, utilities, validation, and configuration are separated into dedicated layers.
 
-## File Management
+## Cloud-Based Media Management
 
-Multer handles incoming files while Cloudinary provides external cloud storage.
+Multer and Cloudinary separate file upload processing from permanent cloud storage.
 
-## Validation
+## Centralized Authentication
 
-Dedicated validation middleware keeps request validation separate from business logic.
+VerifyToken middleware protects private resources without duplicating authentication logic.
 
 ## Centralized Error Handling
 
-Application errors are handled through shared middleware rather than duplicated error logic.
+Shared error middleware provides consistent application error handling.
 
-## Database Relationships
+## Request Validation
 
-The application contains explicit model associations between the main educational entities.
+Validation occurs before requests reach business logic.
 
-## External Service Integration
+## Multiple Business Domains
 
-The backend integrates multiple external systems while keeping their logic separated from core controllers.
+The backend manages products, categories, brands, offers, carts, wishlists, orders, payments, blogs, and customer contact requests.
+
+---
+
+# Security Considerations
+
+Important security considerations for the platform include:
+
+- Authentication token verification
+- Protected private routes
+- Request validation
+- ID validation
+- Secure password storage
+- Server-side payment verification
+- Stripe webhook verification
+- Secure Google OAuth configuration
+- Secure file upload handling
+- Environment variable protection
+
+Payment status should always be verified by the backend rather than trusted from the frontend.
+
+Stripe webhook signatures should also be validated before processing payment events.
 
 ---
 
@@ -973,63 +1310,71 @@ The backend integrates multiple external systems while keeping their logic separ
 Possible future improvements include:
 
 - Redis caching
-- Background job processing
+- Rate limiting
+- Helmet security headers
+- HPP protection
+- Advanced Role-Based Access Control
+- Product inventory management
+- Inventory reservation during checkout
+- Coupon system
+- Advanced product search
+- Product reviews and ratings
+- Order tracking
+- Background jobs
+- Email queues
 - Docker containerization
+- Nginx reverse proxy
 - CI/CD pipelines
 - Automated testing
-- Course recommendations
-- Advanced AI learning assistant
-- Online quizzes
-- Certificates
-- Progress tracking
-- Course completion tracking
-- Advanced analytics
-- Structured monitoring
-- Rate limiting
-- API documentation
-- Search optimization
+- Structured logging
+- Error monitoring
+- API performance monitoring
+- Swagger / OpenAPI documentation
 - Horizontal scaling
 
 ---
 
 # Use Cases
 
-## Student
+## Customer
 
-A student can:
+A customer can:
 
-- Register an account
-- Verify their account
+- Register
 - Login
-- Browse courses
-- View lessons
-- Enroll in courses
+- Authenticate with Google
+- Browse products
+- Browse categories
+- Browse brands
+- Add products to cart
+- Manage shopping cart
+- Add products to wishlist
+- Create orders
 - Complete payments
-- Submit evaluations
-- Write comments
-- Interact with AI-powered features
+- Read blog content
+- Submit contact requests
 
 ## Administrator
 
-An administrator can:
+An administrator can manage platform resources such as:
 
-- Manage users
-- Manage courses
-- Manage categories
-- Monitor enrollments
-- Monitor payments
-- Access dashboard functionality
-- Manage platform content
+- Products
+- Categories
+- Brands
+- Offers
+- Orders
+- Blog content
+- Customer-related data
 
 ---
 
 # Final Note
 
-The E-Learning Platform demonstrates a complete backend architecture for an online education system using Node.js, Express.js, TypeScript, and a model-based database architecture.
+This E-Commerce Backend demonstrates the architecture of a complete online shopping backend built with Node.js, Express.js, MongoDB, and external service integrations.
 
-The project goes beyond basic CRUD functionality by integrating authentication, account verification, password recovery, course enrollment, payments, AI capabilities, file uploads, cloud storage, email services, evaluations, comments, validation, logging, and administrative functionality.
+The project goes beyond basic CRUD functionality by implementing shopping carts, wishlists, order processing, Stripe payments, server-side payment webhooks, Google authentication with Passport.js, Cloudinary-based media storage, email services, validation, and centralized error handling.
 
-The separation between controllers, routes, models, middleware, services, and utilities provides a maintainable foundation that can be extended as the platform grows.
+The separation between routes, controllers, models, middleware, configuration, validation, and utilities provides a maintainable foundation that can evolve into a larger production E-Commerce platform.
 
 ---
 
@@ -1041,12 +1386,14 @@ Backend Developer specializing in:
 
 - Node.js
 - Express.js
-- TypeScript
+- MongoDB
+- Mongoose
 - RESTful APIs
-- Database Design
-- Authentication and Authorization
-- Payment Integration
-- AI Integration
+- Authentication
+- Google OAuth
+- Stripe Payments
+- Payment Webhooks
 - Cloudinary
 - File Upload Systems
+- E-Commerce Systems
 - Backend Architecture
